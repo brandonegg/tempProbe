@@ -10,6 +10,9 @@ packages = [{include = "temp_monitor"}]
 python = "3.11.1"
 flet = "^0.3.2"
 pyinstaller = "^5.7.0"
+plotly = "^5.13.0"
+pandas = "^1.5.3"
+kaleido = "0.2.1"
 
 
 [build-system]
