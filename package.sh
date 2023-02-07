@@ -1,0 +1,1 @@
+poetry run flet pack temp_monitor/main.py
