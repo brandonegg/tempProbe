@@ -1,41 +1,45 @@
 '''
-Main Flet app entry point.
+Main Flet app.
 '''
 import flet as ft
-import temp_monitor.pages.monitor as monitor
-import temp_monitor.pages.settings as settings
+import temp_monitor.containers.monitor as monitor
+from temp_monitor.containers.settings import SettingsContainer
 
-def settings_page():
+class TemperatureMonitorApp:
     '''
-    Settings page view
+    Main application. Holds all flet objects for easy state maintenance
     '''
-    return ft.Text("TODO")
+    def __init__(self, page: ft.Page):
+        self.page = page
+        self.monitor_page = monitor.page()
 
-def main(page: ft.Page):
-    '''
-    Main page display
-    '''
-    page.title = 'Temperature Monitor'
-
-    tabs = ft.Tabs(
-        selected_index=1,
-        animation_duration=300,
-        tabs=[
-            ft.Tab(
-                text="Monitor",
-                content=ft.Container(
-                    content=monitor.page(), alignment=ft.alignment.center
+        self.tabs = ft.Tabs(
+            selected_index=0,
+            animation_duration=300,
+            tabs=[
+                ft.Tab(
+                    text="Monitor",
+                    content=self.monitor_page,
                 ),
-            ),
-            ft.Tab(
-                text="Settings",
-                icon=ft.icons.SETTINGS,
-                content=settings.page(),
-            ),
-        ],
-        expand=1,
-    )
+                ft.Tab(
+                    text="Settings",
+                    icon=ft.icons.SETTINGS,
+                    content=SettingsContainer(self, page, alignment=ft.alignment.center),
+                ),
+            ],
+            expand=1
+        )
 
-    page.add(tabs)
+        self.page.controls.append(self.tabs)
+        self.page.update()
 
-ft.app(target=main)
+if __name__ == "__main__":
+    def main(page: ft.Page):
+        '''
+        Flet entry point to application.
+        '''
+        page.title = "Temperature Monitor"
+        page.padding = 0
+        TemperatureMonitorApp(page)
+
+    ft.app(target=main)
