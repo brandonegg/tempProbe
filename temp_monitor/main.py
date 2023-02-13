@@ -2,7 +2,7 @@
 Main Flet app.
 '''
 import flet as ft
-import temp_monitor.containers.monitor as monitor
+from temp_monitor.containers.monitor import MonitorContainer
 from temp_monitor.containers.settings import SettingsContainer
 
 class TemperatureMonitorApp:
@@ -11,7 +11,6 @@ class TemperatureMonitorApp:
     '''
     def __init__(self, page: ft.Page):
         self.page = page
-        self.monitor_page = monitor.page()
 
         self.tabs = ft.Tabs(
             selected_index=0,
@@ -19,7 +18,7 @@ class TemperatureMonitorApp:
             tabs=[
                 ft.Tab(
                     text="Monitor",
-                    content=self.monitor_page,
+                    content=MonitorContainer(self, page),
                 ),
                 ft.Tab(
                     text="Settings",

@@ -5,17 +5,31 @@ import plotly.express as px
 from flet.plotly_chart import PlotlyChart
 import flet as ft
 
-def page():
+class MonitorContainer(ft.Container):
     '''
-    Page for monitoring data.
+    Main monitoring tab view container
     '''
-    def test(_event):
-        print("hello")
+    def __init__(
+        self,
+        app,
+        page: ft.Page,
+        *args,
+        **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.app = app
+        self.page = page
+        self.graph = TemperatureGraph(expand=True)
+        self.content = ft.Row([self.graph])
 
-    d_f = px.data.gapminder().query("continent=='Oceania'")
-    fig = px.line(d_f, x="year", y="lifeExp", color="country")
-    graph = PlotlyChart(fig, expand=True)
-
-    new_task = ft.TextField(hint_text="test", width=300)
-    input_row = ft.Row([new_task, ft.ElevatedButton("test", on_click=test)])
-    return ft.Container(content=ft.Column([graph, input_row]), alignment=ft.alignment.center)
+class TemperatureGraph(PlotlyChart):
+    '''
+    Main temperature graph object
+    '''
+    def __init__(
+        self,
+        *args, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.data = px.data.gapminder().query("continent=='Oceania'")
+        self.figure = px.line(self.data, x="year", y="lifeExp", color="country")
