@@ -1,1 +1,1 @@
-poetry run flet pack temp_monitor/main.py
+poetry run flet pack --icon media/icons/icon.icns temp_monitor/main.py

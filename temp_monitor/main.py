@@ -1,26 +1,41 @@
 '''
 Main Flet app entry point.
 '''
-import plotly.express as px
-
 import flet as ft
-from flet.plotly_chart import PlotlyChart
+import temp_monitor.pages.monitor as monitor
+import temp_monitor.pages.settings as settings
+
+def settings_page():
+    '''
+    Settings page view
+    '''
+    return ft.Text("TODO")
 
 def main(page: ft.Page):
     '''
     Main page display
     '''
-    def test(e):
-        print("hello")
-
     page.title = 'Temperature Monitor'
 
-    d_f = px.data.gapminder().query("continent=='Oceania'")
-    fig = px.line(d_f, x="year", y="lifeExp", color="country")
+    tabs = ft.Tabs(
+        selected_index=1,
+        animation_duration=300,
+        tabs=[
+            ft.Tab(
+                text="Monitor",
+                content=ft.Container(
+                    content=monitor.page(), alignment=ft.alignment.center
+                ),
+            ),
+            ft.Tab(
+                text="Settings",
+                icon=ft.icons.SETTINGS,
+                content=settings.page(),
+            ),
+        ],
+        expand=1,
+    )
 
-    page.add(PlotlyChart(fig, expand=True))
-
-    new_task = ft.TextField(hint_text="test", width=300)
-    page.add(ft.Row([new_task, ft.ElevatedButton("test", on_click=test)]))
+    page.add(tabs)
 
 ft.app(target=main)
