@@ -33,4 +33,4 @@ class TemperatureGraph(PlotlyChart):
         super().__init__(*args, **kwargs)
         self.display_in = 'F'
         self.data = px.data.gapminder().query("continent=='Oceania'")
-        self.figure = px.line(self.data, x="time (s)", y=f"Temperature ({self.display_in})", color="country")
+        self.figure = px.line(self.data, x="year", y="lifeExp", color="country")
