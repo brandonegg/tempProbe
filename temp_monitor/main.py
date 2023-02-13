@@ -13,7 +13,7 @@ def main(page: ft.Page):
     def test(e):
         print("hello")
 
-    page.title('Temperature Monitor')
+    page.title = 'Temperature Monitor'
 
     d_f = px.data.gapminder().query("continent=='Oceania'")
     fig = px.line(d_f, x="year", y="lifeExp", color="country")
