@@ -1,0 +1,1 @@
+poetry run flet temp_monitor/main.py -d
