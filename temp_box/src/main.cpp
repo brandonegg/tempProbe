@@ -6,6 +6,51 @@ byte mac[6];
 const char* host = "arduino.clanweb.eu"; //webserver
 String url = "/eduroam/data.php"; //URL to target PHP file
 
+void setup_eduroam() {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD); //WITHOUT CERTIFICATE - WORKING WITH EXCEPTION ON RADIUS SERVER
+}
+
+void setup_other() {
+  WiFi.begin(ssid, EAP_PASSWORD);
+}
+
+void connect_wifi() {
+    WiFi.disconnect(true);  //disconnect from WiFi to set new WiFi connection
+    if (strcmp(ssid, "eduroam") == 0) {
+        Serial.println("Configuring WiFi for eduroam authentication");
+        setup_eduroam();
+    } else {
+        setup_other();
+    }
+
+    Serial.print(F("Connecting to network: "));
+    Serial.println(ssid);
+
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(F("."));
+    }
+
+    Serial.println("");
+    Serial.println(F("WiFi is connected!"));
+    Serial.println(F("IP address set: "));
+    Serial.println(WiFi.localIP()); //print LAN IP
+    WiFi.macAddress(mac);
+    Serial.print("MAC address: ");
+    Serial.print(mac[0], HEX);
+    Serial.print(":");
+    Serial.print(mac[1], HEX);
+    Serial.print(":");
+    Serial.print(mac[2], HEX);
+    Serial.print(":");
+    Serial.print(mac[3], HEX);
+    Serial.print(":");
+    Serial.print(mac[4], HEX);
+    Serial.print(":");
+    Serial.println(mac[5], HEX);
+}
+
 void http_request() {
   WiFiClient client;
   delay(1000);
@@ -37,37 +82,10 @@ void http_request() {
 
 void setup() {
   Serial.begin(115200);
-  delay(10);
-  Serial.print(F("Connecting to network: "));
-  Serial.println(ssid);
-  WiFi.disconnect(true);  //disconnect from WiFi to set new WiFi connection
-  WiFi.mode(WIFI_STA); //init wifi mode
-
-  WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD); //WITHOUT CERTIFICATE - WORKING WITH EXCEPTION ON RADIUS SERVER
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(F("."));
-  }
-  Serial.println("");
-  Serial.println(F("WiFi is connected!"));
-  Serial.println(F("IP address set: "));
-  Serial.println(WiFi.localIP()); //print LAN IP
-  WiFi.macAddress(mac);
-  Serial.print("MAC address: ");
-  Serial.print(mac[0], HEX);
-  Serial.print(":");
-  Serial.print(mac[1], HEX);
-  Serial.print(":");
-  Serial.print(mac[2], HEX);
-  Serial.print(":");
-  Serial.print(mac[3], HEX);
-  Serial.print(":");
-  Serial.print(mac[4], HEX);
-  Serial.print(":");
-  Serial.println(mac[5], HEX);
+  connect_wifi();
   http_request(); //I will receive information about successful connection and identity realm (i can write it into Github project page as u have tested it)
 }
+
 void loop() {
   yield();
 }
