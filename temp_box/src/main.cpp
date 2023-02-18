@@ -6,9 +6,6 @@ byte mac[6];
 const char* host = "arduino.clanweb.eu"; //webserver
 String url = "/eduroam/data.php"; //URL to target PHP file
 
-//Identity for user with password related to his realm (organization)
-//Available option of anonymous identity for federation of RADIUS servers or 1st Domain RADIUS servers
-
 void http_request() {
   WiFiClient client;
   delay(1000);
@@ -45,15 +42,9 @@ void setup() {
   Serial.println(ssid);
   WiFi.disconnect(true);  //disconnect from WiFi to set new WiFi connection
   WiFi.mode(WIFI_STA); //init wifi mode
-  //WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD, test_root_ca); //with CERTIFICATE
 
   WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD); //WITHOUT CERTIFICATE - WORKING WITH EXCEPTION ON RADIUS SERVER
 
-  // Example: a cert-file WPA2 Enterprise with PEAP - client certificate and client key required
-  //WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_IDENTITY, EAP_USERNAME, EAP_PASSWORD, test_root_ca, client_cert, client_key);
-
-  // Example: TLS with cert-files and no password - client certificate and client key required
-  //WiFi.begin(ssid, WPA2_AUTH_TLS, EAP_IDENTITY, NULL, NULL, test_root_ca, client_cert, client_key);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(F("."));
