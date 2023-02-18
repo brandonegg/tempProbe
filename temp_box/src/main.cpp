@@ -1,39 +1,82 @@
-/*
-   Copyright (c) 2015, Majenko Technologies
-   All rights reserved.
+#include <WiFi.h> //Wifi library
+#include "esp_wpa2.h" //wpa2 library for connections to Enterprise networks
+#include "secrets.h"
 
-   Redistribution and use in source and binary forms, with or without modification,
-   are permitted provided that the following conditions are met:
+byte mac[6];
+const char* host = "arduino.clanweb.eu"; //webserver
+String url = "/eduroam/data.php"; //URL to target PHP file
 
- * * Redistributions of source code must retain the above copyright notice, this
-     list of conditions and the following disclaimer.
+//Identity for user with password related to his realm (organization)
+//Available option of anonymous identity for federation of RADIUS servers or 1st Domain RADIUS servers
 
- * * Redistributions in binary form must reproduce the above copyright notice, this
-     list of conditions and the following disclaimer in the documentation and/or
-     other materials provided with the distribution.
-
- * * Neither the name of Majenko Technologies nor the names of its
-     contributors may be used to endorse or promote products derived from
-     this software without specific prior written permission.
-
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-   ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-   (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-   ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-#include <Arduino.h>
-
-void setup(void) {
-  Serial.begin(9600);
+void http_request() {
+  WiFiClient client;
+  delay(1000);
+  client.stop();
+  String data = "ssid=" + String(ssid) + "&identity=" + String(EAP_IDENTITY) + "&anonymous_identity=" + String(EAP_IDENTITY);
+  if (client.connect(host, 80)) {
+    Serial.println(F("Connected to webserver!"));
+    client.println("POST " + url + " HTTP/1.0");
+    client.println("Host: " + (String)host);
+    client.println(F("User-Agent: ESP32"));
+    client.println(F("Connection: close"));
+    client.println(F("Content-Type: application/x-www-form-urlencoded;"));
+    client.print(F("Content-Length: "));
+    client.println(data.length());
+    client.println();
+    client.println(data);
+    Serial.println(F("Data received by server, THANKS for trying this eduroam connection example!"));
+    while (client.connected()) {
+      String line = client.readStringUntil('\n'); //HTTP HEADER
+      if (line == "\r") {
+        break;
+      }
+    }
+    String line = client.readStringUntil('\n'); //HTTP PAYLOAD
+  } else {
+    Serial.println(F("Connection wasn't sucessful, try again later"));
+  }
 }
 
-void loop(void) {
-  Serial.println("hello");
-  delay(100);
+void setup() {
+  Serial.begin(115200);
+  delay(10);
+  Serial.print(F("Connecting to network: "));
+  Serial.println(ssid);
+  WiFi.disconnect(true);  //disconnect from WiFi to set new WiFi connection
+  WiFi.mode(WIFI_STA); //init wifi mode
+  //WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD, test_root_ca); //with CERTIFICATE
+
+  WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD); //WITHOUT CERTIFICATE - WORKING WITH EXCEPTION ON RADIUS SERVER
+
+  // Example: a cert-file WPA2 Enterprise with PEAP - client certificate and client key required
+  //WiFi.begin(ssid, WPA2_AUTH_PEAP, EAP_IDENTITY, EAP_USERNAME, EAP_PASSWORD, test_root_ca, client_cert, client_key);
+
+  // Example: TLS with cert-files and no password - client certificate and client key required
+  //WiFi.begin(ssid, WPA2_AUTH_TLS, EAP_IDENTITY, NULL, NULL, test_root_ca, client_cert, client_key);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(F("."));
+  }
+  Serial.println("");
+  Serial.println(F("WiFi is connected!"));
+  Serial.println(F("IP address set: "));
+  Serial.println(WiFi.localIP()); //print LAN IP
+  WiFi.macAddress(mac);
+  Serial.print("MAC address: ");
+  Serial.print(mac[0], HEX);
+  Serial.print(":");
+  Serial.print(mac[1], HEX);
+  Serial.print(":");
+  Serial.print(mac[2], HEX);
+  Serial.print(":");
+  Serial.print(mac[3], HEX);
+  Serial.print(":");
+  Serial.print(mac[4], HEX);
+  Serial.print(":");
+  Serial.println(mac[5], HEX);
+  http_request(); //I will receive information about successful connection and identity realm (i can write it into Github project page as u have tested it)
+}
+void loop() {
+  yield();
 }
