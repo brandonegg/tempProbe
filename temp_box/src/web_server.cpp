@@ -23,15 +23,20 @@ TemperatureServer::TemperatureServer() {
     Serial.println("Web Server has successfully started!");
 }
 
+void TemperatureServer::handle_client() {
+    TemperatureServer::server->handleClient();
+}
+
+void TemperatureServer::handle_ping() {
+    String response = {"{\"status\":\"active\", \"sensor_connected\":true}"};
+    TemperatureServer::server->send(200, "application/json", response);
+}
+
 void TemperatureServer::handle_get_alert_data() {
     Serial.println("Collecting data");
     String* data = TemperatureServer::phone_alert->format_json();
     TemperatureServer::server->send(200, "application/json", (*data));
     delete data;
-}
-
-void TemperatureServer::handle_client() {
-    TemperatureServer::server->handleClient();
 }
 
 void TemperatureServer::handle_not_found() {

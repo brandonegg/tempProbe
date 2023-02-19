@@ -25,6 +25,7 @@ class TemperatureServer {
         
         // Temperature Alert CRUD
         static void handle_get_alert_data();
+        static void handle_ping();
 
         static void handle_not_found();
 };
