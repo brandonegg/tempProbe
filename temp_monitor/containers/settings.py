@@ -69,6 +69,7 @@ class SettingsContainer(ft.Container):
             "phone_number": self.phone_input.value,
             "min_temp": int(self.min_temp_input.value),
             "max_temp": int(self.max_temp_input.value),
+            "unit": "c"
         }
 
         requests.post(ALERT_SETTINGS_URL, json = new_settings)
