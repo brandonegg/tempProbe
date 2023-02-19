@@ -1,8 +1,11 @@
 #include "wifi_util.h"
 #include "secrets.h"
 #include <WiFi.h> //Wifi library
+#include "web_server.h"
 
-const char* host = "arduino.clanweb.eu"; //webserver
+TemperatureServer *temp_server;
+
+const char* host = "temperature.box"; //webserver
 String url = "/eduroam/data.php"; //URL to target PHP file
 
 void http_request() {
@@ -37,9 +40,10 @@ void http_request() {
 void setup() {
   Serial.begin(115200);
   connect_wifi();
-  http_request(); //I will receive information about successful connection and identity realm (i can write it into Github project page as u have tested it)
+  temp_server = new TemperatureServer();
+  //http_request(); //I will receive information about successful connection and identity realm (i can write it into Github project page as u have tested it)
 }
 
 void loop() {
-  yield();
+  (*temp_server).handle_client();
 }
