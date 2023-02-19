@@ -4,6 +4,9 @@ Module for rendering the monitor page details
 import plotly.express as px
 from flet.plotly_chart import PlotlyChart
 import flet as ft
+import requests
+
+TEMPERATURE_HISTORY_URL = "http://tempbox.local/history"
 
 class MonitorContainer(ft.Container):
     '''
@@ -31,6 +34,8 @@ class TemperatureGraph(PlotlyChart):
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
+        response = requests.get(TEMPERATURE_HISTORY_URL)
+        print(response.json())
         self.display_in = 'F'
         self.data = px.data.gapminder().query("continent=='Oceania'")
         self.figure = px.line(self.data, x="year", y="lifeExp", color="country")

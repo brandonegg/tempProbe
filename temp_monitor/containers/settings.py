@@ -29,6 +29,9 @@ class SettingsContainer(ft.Container):
         pass
 
     def _retrieve_server_settings(self):
+        '''
+        Fetches alert settings from temp box server.
+        '''
         return requests.get(ALERT_SETTINGS_URL)
 
     def _add_settings(self, settings):
