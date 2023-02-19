@@ -2,6 +2,8 @@
 #define TEMP_HARDWARE
 #include <Arduino.h>
 
+#define TEMP_BUFFER_SIZE 300
+
 class TemperatureData {
     public:
         String get_history_string(char unit);
@@ -34,20 +36,38 @@ class TemperatureData {
         /**
          * @returns Most recent celsius temperature reading.
          */
-        int get_c();
+        float get_c();
         /**
          * @returns Most recent fahrenheit temperature reading.
          */
-        int get_f();
+        float get_f();
         /**
          * Gets whether the prob is connected.
          */
         bool is_probe_connected();
+        /**
+         * Returns JSON list string for temp buffer.
+         */
+        String get_history_c_str();
+        /**
+         * Returns JSON list string for temp buffer.
+         */
+        String get_history_f_str();
+
 
     private:
+        float bufferC[TEMP_BUFFER_SIZE] = { 0.0f };
+        float bufferF[TEMP_BUFFER_SIZE] = { 0.0f };
+        int buff_pos = 0;
+        int buff_start = 1;
         bool probe_connected;
         float current_c;
         float current_f;
+
+        String get_buffer_str(float* buffer);
 };
+
+// 0,1,2,3,4
+// 51,52,53,54,56
 
 #endif
