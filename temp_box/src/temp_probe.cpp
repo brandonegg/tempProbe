@@ -3,12 +3,14 @@
 /**
  * Temperature probe class functionality. Mostly getters and setters.
  */
-TemperatureData::TemperatureData() {
+TemperatureData::TemperatureData(bool is_probe_connected) {
+    probe_connected = is_probe_connected;
     current_c = 0.0f;
     current_f = 32.0f;
 }
 
-TemperatureData::TemperatureData(float c, float f) {
+TemperatureData::TemperatureData(bool is_probe_connected, float c, float f) {
+    probe_connected = is_probe_connected;
     current_c = c;
     current_f = f;
 }
@@ -29,4 +31,8 @@ int TemperatureData::get_c() {
 
 int TemperatureData::get_f() {
     return current_f;
+}
+
+bool TemperatureData::is_probe_connected() {
+    return probe_connected;
 }

@@ -46,9 +46,10 @@ void TemperatureServer::listen() {
  * such as sensor_connected (whether temp probe is connected), and current temperature data.
  */
 void TemperatureServer::handle_ping() {
-    String response = "{\"status\":\"active\", \"sensor_connected\":true";
-    response = response + ",\"temperature\":" + TemperatureServer::temp_data->temp_json_str();
-    response = response + "}";
+    String response = "{\"status\":\"active\"";
+    response += ",\"sensor_connected\":" + String(TemperatureServer::temp_data->is_probe_connected());
+    response += ",\"temperature\":" + TemperatureServer::temp_data->temp_json_str();
+    response += "}";
     TemperatureServer::server->send(200, "application/json", response);
 }
 

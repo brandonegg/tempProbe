@@ -6,11 +6,11 @@ class TemperatureData {
     public:
         String get_history_string(char unit);
 
-        TemperatureData();
+        TemperatureData(bool is_prob_connected);
         /**
          * Overload function with option to construct with starting temperatures.
          */
-        TemperatureData(float c, float f);
+        TemperatureData(bool is_prob_connected, float c, float f);
         
         /**
          * Use to add a temperature reading to the log.
@@ -33,8 +33,13 @@ class TemperatureData {
          * @returns Most recent fahrenheit temperature reading.
          */
         int get_f();
+        /**
+         * Gets whether the prob is connected.
+         */
+        bool is_probe_connected();
 
     private:
+        bool probe_connected;
         float current_c;
         float current_f;
 };

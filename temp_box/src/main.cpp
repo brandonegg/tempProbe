@@ -15,7 +15,7 @@ void setup() {
   connect_wifi();
 
   // Initialize objects
-  temp_data = new TemperatureData();
+  temp_data = new TemperatureData(true);
   temp_server = new TemperatureServer(temp_data);
 }
 
