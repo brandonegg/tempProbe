@@ -20,6 +20,12 @@ class TemperatureData {
         void record_reading(float c, float f);
 
         /**
+         * Sets whether the temp probe is connected
+         * @param bool connected true/false for connected/not connected
+         */
+        void set_probe(bool connected);
+
+        /**
          * Formats to the style {"c": ..., "f": ...}
          * @returns Temperature json string formatted for web router.
          */

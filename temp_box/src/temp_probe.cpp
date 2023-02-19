@@ -20,6 +20,10 @@ void TemperatureData::record_reading(float c, float f) {
     current_f = f;
 }
 
+void TemperatureData::set_probe(bool connected) {
+    probe_connected = connected;
+}
+
 String TemperatureData::temp_json_str() {
     String result = "{\"c\":" + String(current_c) + ",\"f\":" + String(current_f) + "}";
     return result;
