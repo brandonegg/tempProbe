@@ -1,5 +1,15 @@
 #include "temp_probe.h"
 
+float temp_f = 32;
+float temp_c = 0;
+
+void collect_current_temp(TemperatureData* temp_data) {
+    // TODO: Orlando hardware controls goes here.
+    (*temp_data).record_reading(temp_c, temp_f);
+    temp_f++;
+    temp_c++;
+}
+
 /**
  * Temperature probe class functionality. Mostly getters and setters.
  */
@@ -59,11 +69,11 @@ bool TemperatureData::is_probe_connected() {
 }
 
 String TemperatureData::get_history_c_str() {
-    return get_buffer_str(bufferC);
+    return get_buffer_str(&bufferC[0]);
 }
 
 String TemperatureData::get_history_f_str() {
-    return get_buffer_str(bufferF);
+    return get_buffer_str(&bufferF[0]);
 }
 
 /**
@@ -72,14 +82,15 @@ String TemperatureData::get_history_f_str() {
  * @param float* buffer Pointer to start of buffer
  */
 String TemperatureData::get_buffer_str(float* buffer) {
-    int buffer_index = buff_start;
+    signed int buffer_index = buff_start;
     String output = "[";
 
     for (int offset = 0; offset < TEMP_BUFFER_SIZE; offset++) {
         int i = buffer_index + offset;
         
         if (i >= TEMP_BUFFER_SIZE) {
-            i = offset;
+            buffer_index = -offset;
+            i = buffer_index + offset;
         }
 
         output += String(buffer[i]);
