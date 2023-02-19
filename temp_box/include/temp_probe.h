@@ -67,7 +67,9 @@ class TemperatureData {
         String get_buffer_str(float* buffer);
 };
 
-// 0,1,2,3,4
-// 51,52,53,54,56
+/**
+ * Interfaces with hardware to collect current temperature data.
+ */
+void collect_current_temp(TemperatureData* temp_data);
 
 #endif

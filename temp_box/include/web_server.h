@@ -37,7 +37,8 @@ class TemperatureServer {
         // Route handlers - format = handle_{method}_{endpoint}
         static void handle_get_alert();
         static void handle_post_alert();
-        static void handle_ping();
+        static void handle_get_ping();
+        static void handle_get_history();
         // 404 default
         static void handle_not_found();
 };

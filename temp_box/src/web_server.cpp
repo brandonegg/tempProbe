@@ -23,9 +23,10 @@ TemperatureServer::TemperatureServer(TemperatureData* temp_data) {
     MDNS.begin("tempbox");
     TemperatureServer::server = new WebServer(80);
     // Routes
-    TemperatureServer::server->on("/ping", HTTP_GET, handle_ping);
+    TemperatureServer::server->on("/ping", HTTP_GET, handle_get_ping);
     TemperatureServer::server->on("/alert", HTTP_GET, handle_get_alert);
     TemperatureServer::server->on("/alert", HTTP_POST, handle_post_alert);
+    TemperatureServer::server->on("/history", HTTP_GET, handle_get_history);
     TemperatureServer::server->onNotFound(handle_not_found);
     // Start server
     TemperatureServer::server->begin();
@@ -45,7 +46,7 @@ void TemperatureServer::listen() {
  * Handles the /ping route for the web server. Returns status information for the device
  * such as sensor_connected (whether temp probe is connected), and current temperature data.
  */
-void TemperatureServer::handle_ping() {
+void TemperatureServer::handle_get_ping() {
     String response = "{\"status\":\"active\"";
     response += ",\"sensor_connected\":" + String(TemperatureServer::temp_data->is_probe_connected());
     response += ",\"temperature\":" + TemperatureServer::temp_data->temp_json_str();
@@ -57,6 +58,15 @@ void TemperatureServer::handle_get_alert() {
     String* data = TemperatureServer::phone_alert->format_json();
     TemperatureServer::server->send(200, "application/json", (*data));
     delete data;
+}
+
+void TemperatureServer::handle_get_history() {
+    String response = "{\"c\":";
+    response += TemperatureServer::temp_data->get_history_c_str();
+    response += ",\"f\":";
+    response += TemperatureServer::temp_data->get_history_f_str();
+    response += "}";
+    TemperatureServer::server->send(200, "application/json", response);
 }
 
 void TemperatureServer::handle_post_alert() {
