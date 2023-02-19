@@ -1,6 +1,7 @@
 #ifndef TEMPERATURE_SERVER
 #define TEMPERATURE_SERVER
 #include <WebServer.h>
+#include "temp_probe.h"
 
 /**
  * Object for storing twilio phone data, trigger temps & phone.
@@ -21,7 +22,7 @@ class PhoneAlertData {
 class TemperatureServer {
 
     public:
-        TemperatureServer();
+        TemperatureServer(TemperatureData* temp_data);
         static void listen();
 
         int temp_buffer[300] = { };
@@ -30,6 +31,7 @@ class TemperatureServer {
         // Static members initialized by class constructor.
         static WebServer* server;
         static PhoneAlertData* phone_alert;
+        static TemperatureData *temp_data;
         char reference = 'c'; // c or f - use LOWER case.
         
         // Route handlers - format = handle_{method}_{endpoint}

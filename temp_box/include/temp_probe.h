@@ -10,14 +10,20 @@ class TemperatureData {
         /**
          * Overload function with option to construct with starting temperatures.
          */
-        TemperatureData(int c, int f);
+        TemperatureData(float c, float f);
         
         /**
          * Use to add a temperature reading to the log.
          * @param int c Reading in celsius
          * @param int f Reading in fahrenheit
          */
-        void record_reading(int c, int f);
+        void record_reading(float c, float f);
+
+        /**
+         * Formats to the style {"c": ..., "f": ...}
+         * @returns Temperature json string formatted for web router.
+         */
+        String temp_json_str();
 
         /**
          * @returns Most recent celsius temperature reading.
@@ -29,8 +35,8 @@ class TemperatureData {
         int get_f();
 
     private:
-        int current_c = 0;
-        int current_f = 0;
+        float current_c;
+        float current_f;
 };
 
 #endif

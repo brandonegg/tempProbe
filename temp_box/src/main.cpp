@@ -2,8 +2,10 @@
 #include "secrets.h"
 #include <WiFi.h> //Wifi library
 #include "web_server.h"
+#include "temp_probe.h"
 
-TemperatureServer *temp_server;
+TemperatureServer* temp_server;
+TemperatureData* temp_data;
 
 /**
  * Configuration needs to initialize web server and twilio manager.
@@ -11,7 +13,10 @@ TemperatureServer *temp_server;
 void setup() {
   Serial.begin(115200);
   connect_wifi();
-  temp_server = new TemperatureServer();
+
+  // Initialize objects
+  temp_data = new TemperatureData();
+  temp_server = new TemperatureServer(temp_data);
 }
 
 /**

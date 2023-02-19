@@ -8,12 +8,16 @@
  */
 WebServer* TemperatureServer::server;
 PhoneAlertData* TemperatureServer::phone_alert;
+TemperatureData* TemperatureServer::temp_data;
 
 /**
  * TemperatureServer class initializes webserver on port 80 (with mdns tempbox.local). Adds
  * all route listeners which typically are written as handle_{request_type}_{endpoint_endpoint_endpoint...}
+ * 
+ * @param TemperatureData temp_data Reference to the temp data object for pull current temps from.
  */
-TemperatureServer::TemperatureServer() {
+TemperatureServer::TemperatureServer(TemperatureData* temp_data) {
+    TemperatureServer::temp_data = temp_data;
     TemperatureServer::phone_alert = new PhoneAlertData();
 
     MDNS.begin("tempbox");
@@ -42,7 +46,9 @@ void TemperatureServer::listen() {
  * such as sensor_connected (whether temp probe is connected), and current temperature data.
  */
 void TemperatureServer::handle_ping() {
-    String response = {"{\"status\":\"active\", \"sensor_connected\":true}"};
+    String response = "{\"status\":\"active\", \"sensor_connected\":true";
+    response = response + ",\"temperature\":" + TemperatureServer::temp_data->temp_json_str();
+    response = response + "}";
     TemperatureServer::server->send(200, "application/json", response);
 }
 
