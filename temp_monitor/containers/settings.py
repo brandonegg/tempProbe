@@ -12,13 +12,11 @@ class SettingsContainer(ft.Container):
     '''
     def __init__(
         self,
-        #app,
         page: ft.Page,
         *args,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
-        #self.app = app
         self.page = page
         
         settings_res = self._retrieve_server_settings()

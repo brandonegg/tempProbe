@@ -5,7 +5,9 @@ import plotly.express as px
 from flet.plotly_chart import PlotlyChart
 import flet as ft
 import requests
+import asyncio
 import pandas as pd
+from temp_monitor.data import TemperatureState
 
 TEMPERATURE_HISTORY_URL = "http://tempbox.local/history"
 
@@ -15,38 +17,59 @@ class MonitorContainer(ft.Container):
     '''
     def __init__(
         self,
-        #app,
         page: ft.Page,
+        state: TemperatureState,
         *args,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
-        #self.app = app
         self.page = page
-        self.graph = TemperatureGraph(expand=True)
+        self.state = state
+        self.graph = None
+        self.no_data_screen = None
+        self.graph_gesture_wrapper = None
+        self.render_views()
 
-        graph_gesture_wrapper = ft.GestureDetector(
-            mouse_cursor=ft.MouseCursor.GRAB,
-            on_pan_update=self._pan_update,
-            on_scroll=self._scroll_update,
-            drag_interval=25,
-            content=self.graph,
-        )
+        asyncio.create_task(self._data_update_listener())
 
-        self.content = ft.Row([graph_gesture_wrapper])
+    def render_views(self):
+        if (self.state.data.empty):
+            if self.no_data_screen == None:
+                self.no_data_screen = ft.Text("error, no data")
+            self.content = self.no_data_screen
+        else:
+            if self.graph == None or self.graph_gesture_wrapper:
+                self.graph = TemperatureGraph(self.state, expand=True)
+
+                self.graph_gesture_wrapper = ft.GestureDetector(
+                    mouse_cursor=ft.MouseCursor.GRAB,
+                    on_pan_update=self._pan_update,
+                    on_scroll=self._scroll_update,
+                    drag_interval=25,
+                    content=self.graph,
+                )
+
+            self.content = ft.Row([self.graph_gesture_wrapper])
+
+    async def _data_update_listener(self):
+        #while True:
+        await self.state.data_update_event.wait()
+        self.render_views()
+        self.state.data_update_event.clear()
+        await self.update_async()
 
     async def _scroll_update(self, event):
         scale_factor = 0.001
         factor = 1 + (scale_factor * event.scroll_delta_y)
 
         self.graph.zoom_uniform(factor)
-        await self.page.update_async()
+        await self.update_async()
 
     async def _pan_update(self, event):
         scale_factor = 0.005
 
         self.graph.shift_axis(scale_factor*event.delta_x, scale_factor*event.delta_y)
-        await self.page.update_async()
+        await self.update_async()
 
 class TemperatureGraph(PlotlyChart):
     '''
@@ -54,33 +77,28 @@ class TemperatureGraph(PlotlyChart):
     '''
     def __init__(
         self,
+        state: TemperatureState,
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
-
-        self.display_in = 'F'
         self.x_range = [300, 0]
-        self.y_range = [300, 0]
-        self._update_history()
+        self.y_range = [0, 100]
 
-        self.figure = px.line(self.data, x="Time - Seconds", y=f"Temperature({self.display_in})")
+        self.state = state
+
+        self.figure = px.line(self.state.data, x="Time - Seconds", y=f"Temperature({self.state.data_unit.upper()})")
         self.figure['layout']['xaxis']['autorange'] = "reversed"
 
-    def _update_history(self):
-        '''
-        Make a request to temperature box's history endpoint.
-        '''
-        response = requests.get(TEMPERATURE_HISTORY_URL)
-        if response.status_code == 200:
-            self.temp_history = response.json()
-            if self.data is None:
-                self.data = pd.DataFrame(columns=["Time - Seconds", "Temperature(F)", "Temperature(C)"])
-                self.data.loc[:, "Time - Seconds"] = list(range(299, -1, -1))
+        self._sync_x_range()
 
-            self.data.loc[:, "Temperature(F)"] = self.temp_history["f"]
-            self.data.loc[:, "Temperature(C)"] = self.temp_history["c"]
-            self.x_range = [300, 0]
-            self.y_range = [self.data[f"Temperature({self.display_in})"].min(), self.data[f"Temperature({self.display_in})"].max()]
+    def _sync_x_range(self):
+        '''
+        Update x range and y range variables to be in sync with state
+        '''
+        self.x_range = [len(self.state.data.index), 0]
+        data_col = f"Temperature({self.state.data_unit.upper()})"
+        self.y_range = [self.state.data[data_col].min(), self.state.data[data_col].max()]
+        self._update_axis()
 
     def _update_axis(self):
         '''

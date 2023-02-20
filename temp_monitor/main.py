@@ -1,19 +1,21 @@
 '''
 Main Flet app.
 '''
-import asyncio
 import flet as ft
 from temp_monitor.containers.monitor import MonitorContainer
 from temp_monitor.containers.settings import SettingsContainer
+from temp_monitor.data import TemperatureState
 
 async def init_app(page):
+    state = TemperatureState(page)
+
     tabs = ft.Tabs(
         selected_index=0,
         animation_duration=300,
         tabs=[
             ft.Tab(
                 text="Monitor",
-                content=MonitorContainer(page),
+                content=MonitorContainer(page, state),
             ),
             ft.Tab(
                 text="Settings",
@@ -34,6 +36,7 @@ if __name__ == "__main__":
         '''
         page.title = "Temperature Monitor"
         page.padding = 0
+
         await init_app(page)
 
     ft.app(target=main)
