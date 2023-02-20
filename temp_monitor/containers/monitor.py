@@ -76,7 +76,7 @@ class TemperatureGraph(PlotlyChart):
             if self.data is None:
                 self.data = pd.DataFrame(columns=["Time - Seconds", "Temperature(F)", "Temperature(C)"])
                 self.data.loc[:, "Time - Seconds"] = list(range(299, -1, -1))
-  
+
             self.data.loc[:, "Temperature(F)"] = self.temp_history["f"]
             self.data.loc[:, "Temperature(C)"] = self.temp_history["c"]
             self.x_range = [300, 0]
