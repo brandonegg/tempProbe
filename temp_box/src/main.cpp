@@ -15,23 +15,25 @@ void timed_calls(void* arg) {
   collect_current_temp(temp_data);
 }
 
+void display_test_msg() {
+  Heltec.display->clear();
+  Heltec.display->setContrast(255);
+  Heltec.display->setTextAlignment(TEXT_ALIGN_LEFT);
+  Heltec.display->setFont(ArialMT_Plain_10);
+  Heltec.display->drawString(0, 0, "Hello world"); //this is of course one of the main methods, writing text on the screen
+  Heltec.display->setColor(WHITE); //color to use
+  Heltec.display->display();
+}
+
 /**
  * Configuration needs to initialize web server and twilio manager.
  */
 void setup() {
   Heltec.begin(true, false, true);
-  Heltec.display->clear();
-  Heltec.display->setContrast(255);
-  //Heltec.display->setColor((2 % 2 == 0) ? BLACK : WHITE); 
-  //Heltec.display->fillRect(5, 5, DISPLAY_WIDTH - 5 * 2, DISPLAY_HEIGHT - 5 * 2);
-  Heltec.display->setTextAlignment(TEXT_ALIGN_LEFT);
-  Heltec.display->setFont(ArialMT_Plain_10);
-  Heltec.display->drawString(0, 0, "Hello world"); //this is of course one of the main methods, writing text on the screen
+  Serial.begin(115200);
+  display_test_msg();
 
-  Heltec.display->setColor(WHITE); //color to use
-  Heltec.display->display();
-  //Serial.begin(115200);
-  //connect_wifi();
+  connect_wifi();
 
   // Initialize objects
   temp_data = new TemperatureData(true);
@@ -53,5 +55,5 @@ void setup() {
  * Listen for web server events and poll hardware
  */
 void loop() {
-  //(*temp_server).listen();
+  (*temp_server).listen();
 }
