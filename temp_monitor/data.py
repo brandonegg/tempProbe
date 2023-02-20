@@ -2,6 +2,7 @@ import flet as ft
 import asyncio
 import requests
 import pandas as pd
+import aiohttp
 
 TEMPERATURE_HISTORY_URL = "http://tempbox.local/history"
 
@@ -14,19 +15,15 @@ class TemperatureState:
         asyncio.create_task(self._update_data())
 
     async def _update_data(self):
-        #while True:
-            response = requests.get(TEMPERATURE_HISTORY_URL)
-            if response.status_code == 200:
-                data = response.json()
+        while True:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(TEMPERATURE_HISTORY_URL) as resp:
+                    data = await resp.json()
+                    self.data_unit = "c"
+                    self.data.loc[:, "Temperature(F)"] = data["f"]
+                    self.data.loc[:, "Temperature(C)"] = data["c"]
+                    self.data.loc[:, "Time - Seconds"] = list(range(len(data["f"])-1, -1, -1))
+                    self.data_update_event.set()
+                    print("updated")
 
-                self.data_unit = "c"
-                self.data.loc[:, "Temperature(F)"] = data["f"]
-                self.data.loc[:, "Temperature(C)"] = data["c"]
-                self.data.loc[:, "Time - Seconds"] = list(range(len(data["f"])-1, -1, -1))
-                self.data_update_event.set()
-                print("updated")
-            else:
-                self.data.drop(self.data.index, inplace=True)
-
-            await self.page.update_async()
-            #await asyncio.sleep(1)
+            await asyncio.sleep(1)
