@@ -6,7 +6,6 @@ from flet.plotly_chart import PlotlyChart
 import flet as ft
 import requests
 import pandas as pd
-import math
 
 TEMPERATURE_HISTORY_URL = "http://tempbox.local/history"
 
