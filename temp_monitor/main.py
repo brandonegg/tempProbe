@@ -4,41 +4,39 @@ Main Flet app.
 import flet as ft
 from temp_monitor.containers.monitor import MonitorContainer
 from temp_monitor.containers.settings import SettingsContainer
+from temp_monitor.data import TemperatureState
 
-class TemperatureMonitorApp:
-    '''
-    Main application. Holds all flet objects for easy state maintenance
-    '''
-    def __init__(self, page: ft.Page):
-        self.page = page
+async def init_app(page):
+    state = TemperatureState(page)
 
-        self.tabs = ft.Tabs(
-            selected_index=0,
-            animation_duration=300,
-            tabs=[
-                ft.Tab(
-                    text="Monitor",
-                    content=MonitorContainer(self, page),
-                ),
-                ft.Tab(
-                    text="Settings",
-                    icon=ft.icons.SETTINGS,
-                    content=SettingsContainer(self, page, alignment=ft.alignment.center),
-                ),
-            ],
-            expand=1
-        )
+    tabs = ft.Tabs(
+        selected_index=0,
+        animation_duration=300,
+        tabs=[
+            ft.Tab(
+                text="Monitor",
+                content=MonitorContainer(page, state, alignment=ft.alignment.center),
+            ),
+            ft.Tab(
+                text="Settings",
+                icon=ft.icons.SETTINGS,
+                content=SettingsContainer(page, alignment=ft.alignment.center),
+            ),
+        ],
+        expand=1
+    )
 
-        self.page.controls.append(self.tabs)
-        self.page.update()
+    await page.add_async(tabs)
+    await page.update_async()
 
 if __name__ == "__main__":
-    def main(page: ft.Page):
+    async def main(page: ft.Page):
         '''
         Flet entry point to application.
         '''
         page.title = "Temperature Monitor"
         page.padding = 0
-        TemperatureMonitorApp(page)
+
+        await init_app(page)
 
     ft.app(target=main)

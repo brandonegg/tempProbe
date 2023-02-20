@@ -12,13 +12,11 @@ class SettingsContainer(ft.Container):
     '''
     def __init__(
         self,
-        app,
         page: ft.Page,
         *args,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
-        self.app = app
         self.page = page
         
         settings_res = self._retrieve_server_settings()
@@ -29,6 +27,9 @@ class SettingsContainer(ft.Container):
         pass
 
     def _retrieve_server_settings(self):
+        '''
+        Fetches alert settings from temp box server.
+        '''
         return requests.get(ALERT_SETTINGS_URL)
 
     def _add_settings(self, settings):
