@@ -15,13 +15,13 @@ class MonitorContainer(ft.Container):
     '''
     def __init__(
         self,
-        app,
+        #app,
         page: ft.Page,
         *args,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
-        self.app = app
+        #self.app = app
         self.page = page
         self.graph = TemperatureGraph(expand=True)
 
@@ -35,18 +35,18 @@ class MonitorContainer(ft.Container):
 
         self.content = ft.Row([graph_gesture_wrapper])
 
-    def _scroll_update(self, event):
+    async def _scroll_update(self, event):
         scale_factor = 0.001
         factor = 1 + (scale_factor * event.scroll_delta_y)
 
         self.graph.zoom_uniform(factor)
-        self.page.update()
+        await self.page.update_async()
 
-    def _pan_update(self, event):
+    async def _pan_update(self, event):
         scale_factor = 0.005
 
         self.graph.shift_axis(scale_factor*event.delta_x, scale_factor*event.delta_y)
-        self.page.update()
+        await self.page.update_async()
 
 class TemperatureGraph(PlotlyChart):
     '''
