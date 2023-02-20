@@ -6,6 +6,7 @@ from flet.plotly_chart import PlotlyChart
 import flet as ft
 import requests
 import pandas as pd
+import math
 
 TEMPERATURE_HISTORY_URL = "http://tempbox.local/history"
 
@@ -26,16 +27,26 @@ class MonitorContainer(ft.Container):
         self.graph = TemperatureGraph(expand=True)
 
         graph_gesture_wrapper = ft.GestureDetector(
-            mouse_cursor=ft.MouseCursor.MOVE,
-            on_scale_update=lambda event: self._scale_update(event),
+            mouse_cursor=ft.MouseCursor.GRAB,
+            on_pan_update=self._pan_update,
+            on_scroll=self._scroll_update,
+            drag_interval=25,
             content=self.graph,
         )
 
         self.content = ft.Row([graph_gesture_wrapper])
 
-    def _scale_update(self, event):
-        scale_factor = 2
-        self.graph.shift_axis(scale_factor*event.focal_point_delta_x, scale_factor*event.focal_point_delta_y)
+    def _scroll_update(self, event):
+        scale_factor = 0.001
+        factor = 1 + (scale_factor * event.scroll_delta_y)
+
+        self.graph.zoom_uniform(factor)
+        self.page.update()
+
+    def _pan_update(self, event):
+        scale_factor = 0.005
+
+        self.graph.shift_axis(scale_factor*event.delta_x, scale_factor*event.delta_y)
         self.page.update()
 
 class TemperatureGraph(PlotlyChart):
@@ -49,6 +60,8 @@ class TemperatureGraph(PlotlyChart):
         super().__init__(*args, **kwargs)
 
         self.display_in = 'F'
+        self.x_range = [300, 0]
+        self.y_range = [300, 0]
         self._update_history()
 
         self.figure = px.line(self.data, x="Time - Seconds", y=f"Temperature({self.display_in})")
@@ -70,12 +83,31 @@ class TemperatureGraph(PlotlyChart):
             self.x_range = [300, 0]
             self.y_range = [self.data[f"Temperature({self.display_in})"].min(), self.data[f"Temperature({self.display_in})"].max()]
 
-    def shift_axis(self, amount_x, amount_y):
-        self.x_range = [self.x_range[0] + amount_x/2, self.x_range[1] + amount_x/2]
-        self.y_range = [self.y_range[0] + amount_y/2, self.y_range[1] + amount_y/2]
+    def _update_axis(self):
+        '''
+        Sync x and y-axis values to figure.
+        '''
         self.figure.update_xaxes(autorange=False, range=self.x_range)
         self.figure.update_yaxes(autorange=False, range=self.y_range)
 
-    def zoom_x(self, amount):
-        self.x_range = [self.x_range[0] - amount/2, self.x_range[1] + amount/2]
-        self.figure.update_xaxes(autorange=False, range=self.x_range)
+    def shift_axis(self, amount_x, amount_y):
+        '''
+        Adjust x/y axis
+        '''
+        x_adjustment = abs(self.x_range[0] - self.x_range[1])*(amount_x/2)
+        y_adjustment = abs(self.y_range[0] - self.y_range[1])*(amount_y/2)
+
+        self.x_range = [self.x_range[0] + x_adjustment, self.x_range[1] + x_adjustment]
+        self.y_range = [self.y_range[0] + y_adjustment, self.y_range[1] + y_adjustment]
+        self._update_axis()
+
+    def zoom_uniform(self, factor):
+        '''
+        Zoom x-axis
+        '''
+        x_adjustment = abs(self.x_range[0] - self.x_range[1]) * (1-factor)
+        y_adjustment = abs(self.y_range[0] - self.y_range[1]) * (1-factor)
+
+        self.x_range = [self.x_range[0] - x_adjustment, self.x_range[1] + x_adjustment]
+        self.y_range = [self.y_range[0] + y_adjustment, self.y_range[1] - y_adjustment]
+        self._update_axis()
