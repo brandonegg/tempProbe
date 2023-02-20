@@ -1,6 +1,7 @@
 '''
 Main Flet app.
 '''
+import asyncio
 import flet as ft
 from temp_monitor.containers.monitor import MonitorContainer
 from temp_monitor.containers.settings import SettingsContainer
@@ -30,10 +31,10 @@ class TemperatureMonitorApp:
         )
 
         self.page.controls.append(self.tabs)
-        self.page.update()
+        self.page.update_async()
 
 if __name__ == "__main__":
-    def main(page: ft.Page):
+    async def main(page: ft.Page):
         '''
         Flet entry point to application.
         '''
@@ -41,4 +42,4 @@ if __name__ == "__main__":
         page.padding = 0
         TemperatureMonitorApp(page)
 
-    ft.app(target=main)
+    asyncio.run(ft.app(target=main))
