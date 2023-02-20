@@ -10,6 +10,7 @@ esp_timer_handle_t timer;
 
 TemperatureServer* temp_server;
 TemperatureData* temp_data;
+TextManager* text_manager;
 
 void timed_calls(void* arg) {
   collect_current_temp(temp_data);
@@ -32,6 +33,7 @@ void setup() {
   // Initialize objects
   temp_data = new TemperatureData(true);
   temp_server = new TemperatureServer(temp_data);
+  text_manager = new TextManager(temp_data);
 
   // Timed function
   esp_timer_create_args_t timer_args = {
@@ -50,4 +52,5 @@ void setup() {
  */
 void loop() {
   (*temp_server).listen();
+
 }

@@ -2,18 +2,7 @@
 #define TEMPERATURE_SERVER
 #include <WebServer.h>
 #include "temp_probe.h"
-
-/**
- * Object for storing twilio phone data, trigger temps & phone.
- */
-class PhoneAlertData {
-    public:
-        String phone_number = "";
-        int min_temp = 0;
-        int max_temp = 100;
-        char unit = 'c';
-        String* format_json();
-};
+#include "text_alerts.h"
 
 /**
  * WebServer object controller. Configures and handles incomming web traffic.
