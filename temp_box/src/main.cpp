@@ -32,8 +32,8 @@ void setup() {
 
   // Initialize objects
   temp_data = new TemperatureData(true);
-  temp_server = new TemperatureServer(temp_data);
   text_manager = new TextManager(temp_data);
+  temp_server = new TemperatureServer(temp_data, text_manager);
 
   // Timed function
   esp_timer_create_args_t timer_args = {
@@ -51,6 +51,6 @@ void setup() {
  * Listen for web server events and poll hardware
  */
 void loop() {
-  (*temp_server).listen();
-
+  temp_server->listen();
+  text_manager->check_temp();
 }

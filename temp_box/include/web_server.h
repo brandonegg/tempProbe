@@ -11,7 +11,7 @@
 class TemperatureServer {
 
     public:
-        TemperatureServer(TemperatureData* temp_data);
+        TemperatureServer(TemperatureData* temp_data, TextManager* text_manager);
         static void listen();
 
         int temp_buffer[300] = { };
@@ -20,7 +20,8 @@ class TemperatureServer {
         // Static members initialized by class constructor.
         static WebServer* server;
         static PhoneAlertData* phone_alert;
-        static TemperatureData *temp_data;
+        static TemperatureData* temp_data;
+        static TextManager* text_manager;
         char reference = 'c'; // c or f - use LOWER case.
         
         // Route handlers - format = handle_{method}_{endpoint}

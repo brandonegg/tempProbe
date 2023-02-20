@@ -9,6 +9,7 @@
 WebServer* TemperatureServer::server;
 PhoneAlertData* TemperatureServer::phone_alert;
 TemperatureData* TemperatureServer::temp_data;
+TextManager* TemperatureServer::text_manager;
 
 /**
  * TemperatureServer class initializes webserver on port 80 (with mdns tempbox.local). Adds
@@ -16,9 +17,10 @@ TemperatureData* TemperatureServer::temp_data;
  * 
  * @param TemperatureData temp_data Reference to the temp data object for pull current temps from.
  */
-TemperatureServer::TemperatureServer(TemperatureData* temp_data) {
+TemperatureServer::TemperatureServer(TemperatureData* temp_data, TextManager* text_manager) {
     TemperatureServer::temp_data = temp_data;
     TemperatureServer::phone_alert = new PhoneAlertData();
+    TemperatureServer::text_manager = text_manager;
 
     MDNS.begin("tempbox");
     TemperatureServer::server = new WebServer(80);
@@ -55,7 +57,7 @@ void TemperatureServer::handle_get_ping() {
 }
 
 void TemperatureServer::handle_get_alert() {
-    String* data = TemperatureServer::phone_alert->format_json();
+    String* data = text_manager->get_data()->format_json();
     TemperatureServer::server->send(200, "application/json", (*data));
     delete data;
 }
@@ -70,25 +72,19 @@ void TemperatureServer::handle_get_history() {
 }
 
 void TemperatureServer::handle_post_alert() {
-    DynamicJsonDocument doc(1024);
+    DynamicJsonDocument doc(512);
     deserializeJson(doc, TemperatureServer::server->arg("plain"));
 
-    TemperatureServer::phone_alert->phone_number = doc["phone_number"].as<String>();
-    TemperatureServer::phone_alert->min_temp = doc["min_temp"].as<int>();
-    TemperatureServer::phone_alert->max_temp = doc["max_temp"].as<int>();
-    TemperatureServer::phone_alert->unit = doc["unit"].as<String>().charAt(0);
+    String phone_number = doc["phone_number"].as<String>();
+    float min_temp = doc["min_temp"].as<float>();
+    float max_temp = doc["max_temp"].as<float>();
+    char unit = doc["unit"].as<String>().charAt(0);
+
+    text_manager->update_data(phone_number, min_temp, max_temp, unit);
 
     TemperatureServer::server->send(200, "application/json", "{\"success\":true}");
 }
 
 void TemperatureServer::handle_not_found() {
     TemperatureServer::server->send(404, "text/plain", "Not found");
-}
-
-/*
- * PHONE ALERT FUNCTIONS
- */
-String* PhoneAlertData::format_json() {
-    String* response = new String("{\"phone_number\":\"" + phone_number + "\",\"min_temp\":" + String(min_temp) + ",\"max_temp\":" + String(max_temp) + ",\"unit\":\"c\"}");
-    return response;
 }

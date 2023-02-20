@@ -5,7 +5,7 @@
 #include "twilio.hpp"
 #include "temp_probe.h"
 
-#define TWILIO_FROM_NUMBER "+18776421317"
+#define TWILIO_FROM_NUMBER "+18885719233"
 
 /**
  * Object for storing twilio phone data, trigger temps & phone.
@@ -34,9 +34,13 @@ class TextManager {
          * Check current temperature data. Should be called in main routine loop.
          */
         void check_temp();
+        /**
+         * Getter for phone alert data reference
+         */
+        PhoneAlertData* get_data();
 
     private:
-        PhoneAlertData* data;
+        PhoneAlertData* phone_data;
         TemperatureData* temp_data;
         Twilio* twilio;
         void send_text_alert(String msg);
