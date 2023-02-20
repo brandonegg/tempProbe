@@ -1,12 +1,10 @@
 '''
 Module for rendering the monitor page details
 '''
+import asyncio
 import plotly.express as px
 from flet.plotly_chart import PlotlyChart
 import flet as ft
-import requests
-import asyncio
-import pandas as pd
 from temp_monitor.data import TemperatureState
 
 TEMPERATURE_HISTORY_URL = "http://tempbox.local/history"
@@ -26,19 +24,27 @@ class MonitorContainer(ft.Container):
         self.page = page
         self.state = state
         self.graph = None
+        self.graph_row = None
+
         self.no_data_screen = None
+        self.current_view = None # error | graph
         self.graph_gesture_wrapper = None
-        self.render_views()
 
         asyncio.create_task(self._data_update_listener())
 
-    def render_views(self):
+    async def render_views(self):
+        '''
+        Main view render logic for monitoring page
+        '''
+        prev_view = self.current_view
+    
         if (self.state.data.empty):
-            if self.no_data_screen == None:
+            if self.no_data_screen is None:
                 self.no_data_screen = ft.Text("error, no data")
             self.content = self.no_data_screen
+            self.current_view = "error"
         else:
-            if self.graph == None or self.graph_gesture_wrapper:
+            if self.graph is None or self.graph_gesture_wrapper is None or self.graph_row is None:
                 self.graph = TemperatureGraph(self.state, expand=True)
 
                 self.graph_gesture_wrapper = ft.GestureDetector(
@@ -49,16 +55,25 @@ class MonitorContainer(ft.Container):
                     content=self.graph,
                 )
 
-            self.content = ft.Row([self.graph_gesture_wrapper])
+                self.graph_row = ft.Row([self.graph_gesture_wrapper])
 
-    async def _data_update_listener(self):
-        #while True:
-        await self.state.data_update_event.wait()
-        self.render_views()
-        self.state.data_update_event.clear()
+            self.current_view = "graph"
+            self.content = self.graph_row
+
         await self.update_async()
 
+    async def _data_update_listener(self):
+        await self.render_views()
+        while True:
+            await self.state.data_update_event.wait()
+            await self.render_views()
+            self.state.data_update_event.clear()
+            #await self.update_async()
+
     async def _scroll_update(self, event):
+        if self.graph is None:
+            return
+
         scale_factor = 0.001
         factor = 1 + (scale_factor * event.scroll_delta_y)
 
@@ -66,6 +81,9 @@ class MonitorContainer(ft.Container):
         await self.update_async()
 
     async def _pan_update(self, event):
+        if self.graph is None:
+            return
+
         scale_factor = 0.005
 
         self.graph.shift_axis(scale_factor*event.delta_x, scale_factor*event.delta_y)
@@ -81,8 +99,8 @@ class TemperatureGraph(PlotlyChart):
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
-        self.x_range = [300, 0]
-        self.y_range = [0, 100]
+        self.x_range = None
+        self.y_range = None
 
         self.state = state
 
@@ -90,6 +108,17 @@ class TemperatureGraph(PlotlyChart):
         self.figure['layout']['xaxis']['autorange'] = "reversed"
 
         self._sync_x_range()
+
+    def _before_build_command(self):
+        # TODO: Maybe a more efficient way of doing this?
+        self.figure = px.line(self.state.data, x="Time - Seconds", y=f"Temperature({self.state.data_unit.upper()})")
+        self.figure['layout']['xaxis']['autorange'] = "reversed"
+
+        if self.x_range is None or self.y_range is None:
+            self._sync_x_range()
+        
+        self._update_axis()
+        super()._before_build_command()
 
     def _sync_x_range(self):
         '''

@@ -15,7 +15,7 @@ async def init_app(page):
         tabs=[
             ft.Tab(
                 text="Monitor",
-                content=MonitorContainer(page, state),
+                content=MonitorContainer(page, state, alignment=ft.alignment.center),
             ),
             ft.Tab(
                 text="Settings",
