@@ -3,7 +3,7 @@
 #include <WiFi.h> //Wifi library
 #include "web_server.h"
 #include "temp_probe.h"
-#include "heltec.h"
+#include "lcd.h"
 
 #define TEMPERATURE_POLL_FREQUENCY 1000000 // Once every 1 seconds (time in uS).
 esp_timer_handle_t timer;
@@ -16,20 +16,14 @@ void timed_calls(void* arg) {
 }
 
 void display_test_msg() {
-  Heltec.display->clear();
-  Heltec.display->setContrast(255);
-  Heltec.display->setTextAlignment(TEXT_ALIGN_LEFT);
-  Heltec.display->setFont(ArialMT_Plain_10);
-  Heltec.display->drawString(0, 0, "Hello world"); //this is of course one of the main methods, writing text on the screen
-  Heltec.display->setColor(WHITE); //color to use
-  Heltec.display->display();
+  lcd_init();
+  lcd_render();
 }
 
 /**
  * Configuration needs to initialize web server and twilio manager.
  */
 void setup() {
-  Heltec.begin(true, false, true);
   Serial.begin(115200);
   display_test_msg();
 

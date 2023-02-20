@@ -54,11 +54,11 @@
 
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ 18, /* data=*/ 17, /* reset=*/ 21);
 
-void init(void) {
+void lcd_init(void) {
   u8g2.begin();
 }
 
-void render(void) {
+void lcd_render(void) {
   u8g2.clearBuffer();					// clear the internal memory
   u8g2.setFont(u8g2_font_ncenB08_tr);	// choose a suitable font
   u8g2.drawStr(0,10,"Hello World!");	// write something to the internal memory
