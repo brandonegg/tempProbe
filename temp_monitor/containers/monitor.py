@@ -66,6 +66,8 @@ class MonitorContainer(ft.Container):
         await self.render_views()
         while True:
             await self.state.data_update_event.wait()
+            if not self.graph is None:
+                self.graph.flag_data_for_update()
             await self.render_views()
             self.state.data_update_event.clear()
             #await self.update_async()
@@ -78,7 +80,7 @@ class MonitorContainer(ft.Container):
         factor = 1 + (scale_factor * event.scroll_delta_y)
 
         self.graph.zoom_uniform(factor)
-        await self.update_async()
+        await self.graph.update_async()
 
     async def _pan_update(self, event):
         if self.graph is None:
@@ -87,7 +89,7 @@ class MonitorContainer(ft.Container):
         scale_factor = 0.005
 
         self.graph.shift_axis(scale_factor*event.delta_x, scale_factor*event.delta_y)
-        await self.update_async()
+        await self.graph.update_async()
 
 class TemperatureGraph(PlotlyChart):
     '''
@@ -101,6 +103,7 @@ class TemperatureGraph(PlotlyChart):
         super().__init__(*args, **kwargs)
         self.x_range = None
         self.y_range = None
+        self.data_needs_update = True
 
         self.state = state
 
@@ -111,13 +114,16 @@ class TemperatureGraph(PlotlyChart):
 
     def _before_build_command(self):
         # TODO: Maybe a more efficient way of doing this?
-        self.figure = px.line(self.state.data, x="Time - Seconds", y=f"Temperature({self.state.data_unit.upper()})")
-        self.figure['layout']['xaxis']['autorange'] = "reversed"
+        if self.data_needs_update:
+            self.figure = px.line(self.state.data, x="Time - Seconds", y=f"Temperature({self.state.data_unit.upper()})")
+            self.figure['layout']['xaxis']['autorange'] = "reversed"
+            self.data_needs_update = False
 
-        if self.x_range is None or self.y_range is None:
-            self._sync_x_range()
+            if self.x_range is None or self.y_range is None:
+                self._sync_x_range()
         
-        self._update_axis()
+            self._update_axis()
+
         super()._before_build_command()
 
     def _sync_x_range(self):
@@ -146,6 +152,12 @@ class TemperatureGraph(PlotlyChart):
         self.x_range = [self.x_range[0] + x_adjustment, self.x_range[1] + x_adjustment]
         self.y_range = [self.y_range[0] + y_adjustment, self.y_range[1] + y_adjustment]
         self._update_axis()
+
+    def flag_data_for_update(self):
+        '''
+        Makes it so new line graph is only generated when needed. Flag this when dataframe updates.
+        '''
+        self.data_needs_update = True
 
     def zoom_uniform(self, factor):
         '''
