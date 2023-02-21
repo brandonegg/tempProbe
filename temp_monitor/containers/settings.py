@@ -31,6 +31,7 @@ class SettingsContainer(ft.Container):
         self.alert_settings_component = None
         self.alert_settings_input_component = None
         self.main_column_component = None
+        self.min_temp_input = None
 
         self._settings_update_event = asyncio.Event()
         asyncio.create_task(self._render_update_listener())
@@ -73,10 +74,9 @@ class SettingsContainer(ft.Container):
                     self.radio_temp_selector,
                     ft.Container(
                         ft.OutlinedButton(text="update", on_click=self._update_unit),
-                        alignment=ft.alignment.center,
-                    )
+                        alignment=ft.alignment.center
+                    ),
                 ]),
-                padding=30,
                 width=300
             )
 
@@ -98,7 +98,6 @@ class SettingsContainer(ft.Container):
                         )
                     ]),
                     alignment=ft.alignment.center,
-                    width=300
                 )
 
             self.alert_settings_component.content = self.refresh_data_component
@@ -121,7 +120,6 @@ class SettingsContainer(ft.Container):
                                     self.min_temp_input,
                                     self.max_temp_input
                                 ],
-                                width=300,
                                 spacing=20,
                             ),
                             ft.Container(
@@ -130,9 +128,7 @@ class SettingsContainer(ft.Container):
                             ),
                             self.alert_bottom_container,
                         ],
-                        width=300, 
                     ),
-                    padding=30,
                 )
             else:
                 self.phone_input.value = self.settings["phone_number"]
@@ -145,8 +141,11 @@ class SettingsContainer(ft.Container):
             self.alert_settings_component.content = self.alert_settings_input_component
 
         if self.main_column_component is None:
-            self.alert_box_container = ft.Container()
-            self.main_column_component = ft.Column([self.unit_switcher_component, self.alert_settings_component])
+            self.main_column_component = ft.Container(
+                ft.Column([self.unit_switcher_component, self.alert_settings_component], width=300, spacing=60),
+                alignment=ft.alignment.center,
+                padding=30
+            )
 
         self.content = self.main_column_component
         await self.update_async()
@@ -157,6 +156,9 @@ class SettingsContainer(ft.Container):
     async def _update_unit(self, _event):
         self.state.set_unit(self.radio_temp_selector.value)
 
+        if self.min_temp_input is None:
+            return
+        
         self.min_temp_input.label = f"Max({self.state.data_unit.upper()})"
         self.max_temp_input.label = f"Max({self.state.data_unit.upper()})"
         await self.max_temp_input.update_async()

@@ -52,6 +52,6 @@ void TextManager::check_temp() {
  * PHONE ALERT FUNCTIONS
  */
 String* PhoneAlertData::format_json() {
-    String* response = new String("{\"phone_number\":\"" + phone_number + "\",\"min_temp\":" + String(min_temp) + ",\"max_temp\":" + String(max_temp) + ",\"unit\":\"c\"}");
+    String* response = new String("{\"phone_number\":\"" + phone_number + "\",\"min_temp\":" + String(min_temp) + ",\"max_temp\":" + String(max_temp) + ",\"unit\":\""+ unit + "\"}");
     return response;
 }
