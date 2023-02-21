@@ -24,7 +24,7 @@ class MonitorContainer(ft.Container):
         self.page = page
         self.state = state
         self.graph = None
-        self.graph_row = None
+        self.graph_container = None
 
         self.no_data_screen = None
         self.current_view = None # error | graph
@@ -44,7 +44,7 @@ class MonitorContainer(ft.Container):
             self.content = self.no_data_screen
             self.current_view = "error"
         else:
-            if self.graph is None or self.graph_gesture_wrapper is None or self.graph_row is None:
+            if self.graph is None or self.graph_gesture_wrapper is None or self.graph_container is None:
                 self.graph = TemperatureGraph(self.state, expand=True)
 
                 self.graph_gesture_wrapper = ft.GestureDetector(
@@ -55,10 +55,10 @@ class MonitorContainer(ft.Container):
                     content=self.graph,
                 )
 
-                self.graph_row = ft.Row([self.graph_gesture_wrapper])
+                self.graph_container = ft.Container(self.graph_gesture_wrapper, alignment=ft.alignment.center)
 
             self.current_view = "graph"
-            self.content = self.graph_row
+            self.content = self.graph_container
 
         await self.update_async()
 

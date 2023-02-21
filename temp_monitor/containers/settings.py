@@ -5,6 +5,7 @@ import flet as ft
 import requests
 import asyncio
 import aiohttp
+from temp_monitor.data import TemperatureState
 
 ALERT_SETTINGS_URL = "http://tempbox.local/alert"
 
@@ -15,11 +16,13 @@ class SettingsContainer(ft.Container):
     def __init__(
         self,
         page: ft.Page,
+        state: TemperatureState,
         *args,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.page = page
+        self.state = state
         # Stores phone min/max and phone_number
         self.settings = None
         # Components
@@ -59,13 +62,15 @@ class SettingsContainer(ft.Container):
 
     async def _render(self):
         if self.unit_switcher_component is None:
+            self.radio_temp_selector = ft.RadioGroup(content=ft.Row([
+                        ft.Radio(value= "c", label="Celsius"),
+                        ft.Radio(value= "f", label="Fahrenheit")
+                    ]))
+
             self.unit_switcher_component = ft.Container(
                 ft.Column([
                     ft.Text("Display Temperature In:", size=15),
-                    ft.RadioGroup(content=ft.Row([
-                        ft.Radio(value= "c", label="Celsius"),
-                        ft.Radio(value= "f", label="Fahrenheit")
-                    ])),
+                    self.radio_temp_selector,
                     ft.Container(
                         ft.OutlinedButton(text="update", on_click=self._update_settings),
                         alignment=ft.alignment.center,
@@ -74,6 +79,8 @@ class SettingsContainer(ft.Container):
                 padding=30,
                 width=200
             )
+
+        self.radio_temp_selector.value = self.state.data_unit
 
         if self.alert_settings_component is None:
             self.alert_settings_component = ft.Container()
@@ -92,8 +99,8 @@ class SettingsContainer(ft.Container):
                 self.phone_input = ft.TextField(label="Phone Number", hint_text='include area code', value=self.settings["phone_number"], text_align=ft.TextAlign.RIGHT, width=300)
                 self.min_temp_input = ft.TextField(label=f"Min ({self.settings['unit'].upper()})", value=self.settings["min_temp"], expand=True)
                 self.max_temp_input = ft.TextField(label=f"Max ({self.settings['unit'].upper()})", value=self.settings["max_temp"], expand=True)
-                self.update_button = ft.OutlinedButton(text="update", on_click=self._update_settings)
-                self.alert_box_loading_container = ft.Container()
+                self.update_alert_button = ft.OutlinedButton(text="update", on_click=self._update_settings)
+                self.alert_bottom_container = ft.Container(alignment=ft.alignment.center)
 
                 self.alert_settings_input_component = ft.Container(
                     ft.Column(
@@ -110,16 +117,23 @@ class SettingsContainer(ft.Container):
                                 spacing=20,
                             ),
                             ft.Container(
-                                self.update_button,
+                                self.update_alert_button,
                                 alignment=ft.alignment.center,
                             ),
-                            self.alert_box_loading_container,
+                            self.alert_bottom_container,
                         ],
                         width=200, 
                     ),
                     padding=30,
                 )
-
+            else:
+                self.phone_input.value = self.settings["phone_number"]
+                self.min_temp_input.label = f"Min({self.settings['unit'].upper()})"
+                self.min_temp_input.value = self.settings["min_temp"]
+                
+                self.max_temp_input.label = f"Max({self.settings['unit'].upper()})"
+                self.max_temp_input.value = self.settings["max_temp"]
+            
             self.alert_settings_component.content = self.alert_settings_input_component
 
         if self.main_column_component is None:
@@ -129,17 +143,23 @@ class SettingsContainer(ft.Container):
         self.content = self.main_column_component
         await self.update_async()
 
-    def _set_alert_loading(self):
-        pass
+    async def _set_alert_loading(self):
+        self.alert_bottom_container.content = ft.Row([
+            ft.ProgressRing(width=16, height=16, stroke_width = 2),
+            ft.Text("sending data..."),
+        ])
+        self.update_alert_button.disabled = True
+        await self.alert_settings_input_component.update_async()
 
-    def _update_settings(self, event):
+    async def _update_settings(self, event):
         new_settings = {
             "phone_number": self.phone_input.value,
             "min_temp": int(self.min_temp_input.value),
             "max_temp": int(self.max_temp_input.value),
-            "unit": "c"
+            "unit": self.state.data_unit
         }
 
-
+        await self._set_alert_loading()
         requests.post(ALERT_SETTINGS_URL, json = new_settings)
-        self._retrieve_server_settings()
+        await self._retrieve_server_settings()
+        # stop loading

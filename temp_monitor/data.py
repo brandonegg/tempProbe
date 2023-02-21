@@ -16,6 +16,9 @@ class TemperatureState:
         self.data_update_event = asyncio.Event()
         asyncio.create_task(self._update_data())
 
+    def set_unit(self, unit):
+        self.data_unit = unit
+
     async def _update_data(self):
         while True:
             try:

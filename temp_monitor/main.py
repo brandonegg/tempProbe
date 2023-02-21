@@ -8,6 +8,13 @@ from temp_monitor.data import TemperatureState
 
 async def init_app(page):
     state = TemperatureState(page)
+    settings_tab = SettingsContainer(page, state, alignment=ft.alignment.center)
+
+    # Tab Change Listener:
+    async def on_change(event):
+        if int(event.data) == 1: #settings page
+            #fix any unchanged settings
+            await settings_tab._render()
 
     tabs = ft.Tabs(
         selected_index=0,
@@ -20,10 +27,11 @@ async def init_app(page):
             ft.Tab(
                 text="Settings",
                 icon=ft.icons.SETTINGS,
-                content=SettingsContainer(page, alignment=ft.alignment.center),
+                content=settings_tab,
             ),
         ],
-        expand=1
+        expand=1,
+        on_change=on_change
     )
 
     await page.add_async(tabs)
