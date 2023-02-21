@@ -72,12 +72,12 @@ class SettingsContainer(ft.Container):
                     ft.Text("Display Temperature In:", size=15),
                     self.radio_temp_selector,
                     ft.Container(
-                        ft.OutlinedButton(text="update", on_click=self._update_settings),
+                        ft.OutlinedButton(text="update", on_click=self._update_unit),
                         alignment=ft.alignment.center,
                     )
                 ]),
                 padding=30,
-                width=200
+                width=300
             )
 
         self.radio_temp_selector.value = self.state.data_unit
@@ -90,7 +90,15 @@ class SettingsContainer(ft.Container):
             # render refresh button
             if self.refresh_data_component is None:
                 self.refresh_data_component = ft.Container(
-                    ft.OutlinedButton(text="refresh", on_click=self._retrieve_server_settings)
+                    ft.Column([
+                        ft.Text("Unable to contact server", color='red'),
+                        ft.Container(
+                            ft.OutlinedButton(text="try again", on_click=self._refresh_alert_settings),
+                            alignment=ft.alignment.center,
+                        )
+                    ]),
+                    alignment=ft.alignment.center,
+                    width=300
                 )
 
             self.alert_settings_component.content = self.refresh_data_component
@@ -113,7 +121,7 @@ class SettingsContainer(ft.Container):
                                     self.min_temp_input,
                                     self.max_temp_input
                                 ],
-                                width=200,
+                                width=300,
                                 spacing=20,
                             ),
                             ft.Container(
@@ -122,16 +130,16 @@ class SettingsContainer(ft.Container):
                             ),
                             self.alert_bottom_container,
                         ],
-                        width=200, 
+                        width=300, 
                     ),
                     padding=30,
                 )
             else:
                 self.phone_input.value = self.settings["phone_number"]
-                self.min_temp_input.label = f"Min({self.settings['unit'].upper()})"
+                self.min_temp_input.label = f"Min({self.state.data_unit.upper()})"
                 self.min_temp_input.value = self.settings["min_temp"]
                 
-                self.max_temp_input.label = f"Max({self.settings['unit'].upper()})"
+                self.max_temp_input.label = f"Max({self.state.data_unit.upper()})"
                 self.max_temp_input.value = self.settings["max_temp"]
             
             self.alert_settings_component.content = self.alert_settings_input_component
@@ -142,6 +150,17 @@ class SettingsContainer(ft.Container):
 
         self.content = self.main_column_component
         await self.update_async()
+
+    async def _refresh_alert_settings(self, _event):
+        await self._retrieve_server_settings()
+
+    async def _update_unit(self, _event):
+        self.state.set_unit(self.radio_temp_selector.value)
+
+        self.min_temp_input.label = f"Max({self.state.data_unit.upper()})"
+        self.max_temp_input.label = f"Max({self.state.data_unit.upper()})"
+        await self.max_temp_input.update_async()
+        await self.min_temp_input.update_async()
 
     async def _set_alert_loading(self):
         self.alert_bottom_container.content = ft.Row([

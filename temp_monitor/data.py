@@ -17,7 +17,11 @@ class TemperatureState:
         asyncio.create_task(self._update_data())
 
     def set_unit(self, unit):
+        print(unit)
         self.data_unit = unit
+        print(self.data_unit)
+        print("up[dating]")
+        asyncio.create_task(self._update_data())
 
     async def _update_data(self):
         while True:
@@ -25,7 +29,6 @@ class TemperatureState:
                 async with aiohttp.ClientSession() as session:
                     async with session.get(TEMPERATURE_HISTORY_URL) as resp:
                         data = await resp.json()
-                        self.data_unit = "c"
                         self.data.loc[:, "Temperature(F)"] = data["f"]
                         self.data.loc[:, "Temperature(C)"] = data["c"]
                         self.data.loc[:, "Time - Seconds"] = list(range(len(data["f"])-1, -1, -1))

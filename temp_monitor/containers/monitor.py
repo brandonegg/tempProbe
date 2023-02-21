@@ -115,6 +115,7 @@ class TemperatureGraph(PlotlyChart):
     def _before_build_command(self):
         # TODO: Maybe a more efficient way of doing this?
         if self.data_needs_update:
+            print(self.state.data_unit.upper())
             self.figure = px.line(self.state.data, x="Time - Seconds", y=f"Temperature({self.state.data_unit.upper()})")
             self.figure['layout']['xaxis']['autorange'] = "reversed"
             self.data_needs_update = False
