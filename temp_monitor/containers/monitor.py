@@ -71,12 +71,22 @@ class MonitorContainer(ft.Container):
                     content=self.graph,
                 )
 
-                self.graph_container = ft.Container(self.graph_gesture_wrapper, alignment=ft.alignment.center)
+                self.graph_container = ft.Container(
+                    ft.Column([
+                        ft.Switch(label="Enable Display", value=False, on_change=self._enable_display_changed),
+                        self.graph_gesture_wrapper
+                    ]),
+                    alignment=ft.alignment.center
+                )
 
             self.current_view = "graph"
             self.content = self.graph_container
 
         await self.update_async()
+
+    async def _enable_display_changed(self):
+        # TODO: Make request to route to update display to on
+        pass
 
     async def _data_update_listener(self):
         await self.render_views()
