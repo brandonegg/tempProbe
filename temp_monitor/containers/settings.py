@@ -31,6 +31,7 @@ class SettingsContainer(ft.Container):
         self.alert_settings_component = None
         self.alert_settings_input_component = None
         self.main_column_component = None
+        self.alert_bottom_container = None
         self.min_temp_input = None
 
         self._settings_update_event = asyncio.Event()
@@ -41,6 +42,8 @@ class SettingsContainer(ft.Container):
         '''
         Fetches alert settings from temp box server.
         '''
+        await self._set_alert_loading("pulling latest data...")
+
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(ALERT_SETTINGS_URL) as resp:
@@ -50,6 +53,7 @@ class SettingsContainer(ft.Container):
             self.settings = None
 
         self._settings_update_event.set()
+        await self._loading_finished_handler()
 
     async def _render_update_listener(self):
         await self._render()
@@ -164,11 +168,18 @@ class SettingsContainer(ft.Container):
         await self.max_temp_input.update_async()
         await self.min_temp_input.update_async()
 
-    async def _set_alert_loading(self):
+    async def _set_alert_loading(self, reason):
+        if self.alert_bottom_container is None:
+            return
+
         self.alert_bottom_container.content = ft.Row([
                 ft.ProgressRing(width=16, height=16, stroke_width = 2),
-                ft.Text("sending data..."),
+                ft.Text(reason),
             ])
+        
+        self.phone_input.read_only = True
+        self.min_temp_input.read_only = True
+        self.max_temp_input.read_only = True
         self.update_alert_button.disabled = True
         await self.alert_settings_input_component.update_async()
 
@@ -183,6 +194,12 @@ class SettingsContainer(ft.Container):
         await self.alert_bottom_container.update_async()
 
     async def _loading_finished_handler(self):
+        if self.alert_bottom_container is None:
+            return
+
+        self.phone_input.read_only = False
+        self.min_temp_input.read_only = False
+        self.max_temp_input.read_only = False
         self.update_alert_button.disabled = False
         self.alert_bottom_container.content = ft.Container()
         
@@ -196,12 +213,13 @@ class SettingsContainer(ft.Container):
             "unit": self.state.data_unit
         }
 
-        await self._set_alert_loading()
+        await self._set_alert_loading("sending data to box...")
 
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(ALERT_SETTINGS_URL, json=new_settings) as resp:
                     await self._loading_finished_handler()
+                    await self._retrieve_server_settings()
                     await self._show_alert_message(5, "Alert settings updated successfully!", "green")
         except:
             await self._loading_finished_handler()
