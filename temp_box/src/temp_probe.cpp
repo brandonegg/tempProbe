@@ -65,8 +65,7 @@ float TemperatureData::get_f() {
 }
 
 bool TemperatureData::is_probe_connected() {
-    //return probe_connected;
-    return false;
+    return probe_connected;
 }
 
 String TemperatureData::get_history_c_str() {

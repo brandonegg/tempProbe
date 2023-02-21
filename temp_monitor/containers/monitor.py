@@ -44,8 +44,7 @@ class MonitorContainer(ft.Container):
             if self.no_data_screen is None:
                 self.no_data_screen = ft.Container(
                     ft.Column([
-                        ft.Text("Error: Unable to find temperature box on network", color="red", size=20),
-                        ft.Text("Attempting to retry...", size=14),
+                        ft.Text("Attempting to connect to temperature sensor...", size=14),
                         ft.Container(ft.ProgressBar(width=200), alignment=ft.alignment.center, width=400)
                     ]),
                     alignment=ft.alignment.center,
