@@ -14,12 +14,14 @@ void collect_current_temp(TemperatureData* temp_data) {
  * Temperature probe class functionality. Mostly getters and setters.
  */
 TemperatureData::TemperatureData(bool is_probe_connected) {
+    remote_display_on = false;
     probe_connected = is_probe_connected;
     current_c = 0.0f;
     current_f = 32.0f;
 }
 
 TemperatureData::TemperatureData(bool is_probe_connected, float c, float f) {
+    remote_display_on = false;
     probe_connected = is_probe_connected;
     current_c = c;
     current_f = f;
@@ -74,6 +76,14 @@ String TemperatureData::get_history_c_str() {
 
 String TemperatureData::get_history_f_str() {
     return get_buffer_str(&bufferF[0]);
+}
+
+bool TemperatureData::is_remote_display_enabled() {
+    return remote_display_on;
+}
+
+void TemperatureData::set_remote_display_enabled(bool val) {
+    remote_display_on = val;
 }
 
 /**

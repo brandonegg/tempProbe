@@ -29,6 +29,7 @@ TemperatureServer::TemperatureServer(TemperatureData* temp_data, TextManager* te
     TemperatureServer::server->on("/alert", HTTP_GET, handle_get_alert);
     TemperatureServer::server->on("/alert", HTTP_POST, handle_post_alert);
     TemperatureServer::server->on("/history", HTTP_GET, handle_get_history);
+    TemperatureServer::server->on("/display", HTTP_POST, handle_post_display);
     TemperatureServer::server->onNotFound(handle_not_found);
     // Start server
     TemperatureServer::server->begin();
@@ -62,12 +63,21 @@ void TemperatureServer::handle_get_alert() {
     delete data;
 }
 
+void TemperatureServer::handle_post_display() {
+    DynamicJsonDocument doc(512);
+    deserializeJson(doc, TemperatureServer::server->arg("plain"));
+
+    bool val = doc["set_display"].as<bool>();
+    TemperatureServer::temp_data->set_remote_display_enabled(val);
+}
+
 void TemperatureServer::handle_get_history() {
     String response = "{\"c\":";
     response += TemperatureServer::temp_data->get_history_c_str();
     response += ",\"f\":";
     response += TemperatureServer::temp_data->get_history_f_str();
     response += ",\"sensor_connected\":" + String(TemperatureServer::temp_data->is_probe_connected());
+    response += ",\"display_on\":" + String(TemperatureServer::temp_data->is_remote_display_enabled());
     response += "}";
     TemperatureServer::server->send(200, "application/json", response);
 }

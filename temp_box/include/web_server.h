@@ -29,6 +29,7 @@ class TemperatureServer {
         static void handle_post_alert();
         static void handle_get_ping();
         static void handle_get_history();
+        static void handle_post_display();
         // 404 default
         static void handle_not_found();
 };

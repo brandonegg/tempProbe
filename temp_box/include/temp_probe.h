@@ -53,6 +53,14 @@ class TemperatureData {
          * Returns JSON list string for temp buffer.
          */
         String get_history_f_str();
+        /**
+         * Returns true is temp monitor has told device to enable display.
+         */
+        bool is_remote_display_enabled();
+        /**
+         * Sets remote_display_enabled variable.
+         */
+        void set_remote_display_enabled(bool val);
 
 
     private:
@@ -61,6 +69,8 @@ class TemperatureData {
         int buff_pos = 0;
         int buff_start = 1;
         bool probe_connected;
+        // Tells device that application is requesting display be on
+        bool remote_display_on;
         float current_c;
         float current_f;
 
