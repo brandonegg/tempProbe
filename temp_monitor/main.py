@@ -14,7 +14,7 @@ async def init_app(page):
     async def on_change(event):
         if int(event.data) == 1: #settings page
             #fix any unchanged settings
-            await settings_tab._render()
+            await settings_tab._retrieve_server_settings()
 
     tabs = ft.Tabs(
         selected_index=0,

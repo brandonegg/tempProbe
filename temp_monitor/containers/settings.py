@@ -166,11 +166,27 @@ class SettingsContainer(ft.Container):
 
     async def _set_alert_loading(self):
         self.alert_bottom_container.content = ft.Row([
-            ft.ProgressRing(width=16, height=16, stroke_width = 2),
-            ft.Text("sending data..."),
-        ])
+                ft.ProgressRing(width=16, height=16, stroke_width = 2),
+                ft.Text("sending data..."),
+            ])
         self.update_alert_button.disabled = True
         await self.alert_settings_input_component.update_async()
+
+    async def _show_alert_message(self, time, msg, color):
+        self.alert_bottom_container.content = ft.Container(
+            ft.Text(msg, color=color),
+            alignment=ft.alignment.center,
+        )
+        await self.alert_bottom_container.update_async()
+        await asyncio.sleep(time)
+        self.alert_bottom_container.content = ft.Container()
+        await self.alert_bottom_container.update_async()
+
+    async def _loading_finished_handler(self):
+        self.update_alert_button.disabled = False
+        self.alert_bottom_container.content = ft.Container()
+        
+        await self.update_alert_button.update_async()
 
     async def _update_settings(self, event):
         new_settings = {
@@ -181,6 +197,12 @@ class SettingsContainer(ft.Container):
         }
 
         await self._set_alert_loading()
-        requests.post(ALERT_SETTINGS_URL, json = new_settings)
-        await self._retrieve_server_settings()
-        # stop loading
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(ALERT_SETTINGS_URL, json=new_settings) as resp:
+                    await self._loading_finished_handler()
+                    await self._show_alert_message(5, "Alert settings updated successfully!", "green")
+        except:
+            await self._loading_finished_handler()
+            await self._show_alert_message(5, "No response from server", "red")
