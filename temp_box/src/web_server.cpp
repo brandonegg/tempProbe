@@ -67,6 +67,7 @@ void TemperatureServer::handle_get_history() {
     response += TemperatureServer::temp_data->get_history_c_str();
     response += ",\"f\":";
     response += TemperatureServer::temp_data->get_history_f_str();
+    response += ",\"sensor_connected\":" + String(TemperatureServer::temp_data->is_probe_connected());
     response += "}";
     TemperatureServer::server->send(200, "application/json", response);
 }

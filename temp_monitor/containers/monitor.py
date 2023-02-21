@@ -23,10 +23,12 @@ class MonitorContainer(ft.Container):
         super().__init__(*args, **kwargs)
         self.page = page
         self.state = state
+
         self.graph = None
         self.graph_container = None
-
         self.no_data_screen = None
+        self.no_sensor_screen = None
+
         self.current_view = None # error | graph
         self.graph_gesture_wrapper = None
 
@@ -38,10 +40,25 @@ class MonitorContainer(ft.Container):
         '''
         prev_view = self.current_view
     
-        if (self.state.data.empty):
+        if not self.state.server_connected:
             if self.no_data_screen is None:
-                self.no_data_screen = ft.Text("error, no data")
+                self.no_data_screen = ft.Container(
+                    ft.Column([
+                        ft.Text("Error: Unable to find temperature box on network", color="red", size=20),
+                        ft.Text("Attempting to retry...", size=14),
+                        ft.Container(ft.ProgressBar(width=200), alignment=ft.alignment.center, width=400)
+                    ]),
+                    alignment=ft.alignment.center,
+                    width=400
+                )
+
             self.content = self.no_data_screen
+            self.current_view = "error"
+        elif not self.state.sensor_connected:
+            if self.no_sensor_screen is None:
+                self.no_sensor_screen = ft.Text("Temperature Sensor not Connected!", color="red", size=30)
+
+            self.content = self.no_sensor_screen
             self.current_view = "error"
         else:
             if self.graph is None or self.graph_gesture_wrapper is None or self.graph_container is None:

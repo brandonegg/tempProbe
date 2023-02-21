@@ -4,6 +4,7 @@ import pandas as pd
 import aiohttp
 
 TEMPERATURE_HISTORY_URL = "http://tempbox.local/history"
+FAILURE_THRESHOLD = 4
 
 class TemperatureState:
     '''
@@ -13,6 +14,9 @@ class TemperatureState:
         self.data = pd.DataFrame(columns=["Time - Seconds", "Temperature(F)", "Temperature(C)"])
         self.data_unit = "c"
         self.page = page
+        self.request_fail_count = 0
+        self.server_connected = False
+        self.sensor_connected = False
         self.data_update_event = asyncio.Event()
         asyncio.create_task(self._update_data())
 
@@ -23,14 +27,24 @@ class TemperatureState:
     async def _update_data(self):
         while True:
             try:
-                async with aiohttp.ClientSession() as session:
+                session_timeout = aiohttp.ClientTimeout(total=None,sock_connect=1,sock_read=2)
+                async with aiohttp.ClientSession(timeout=session_timeout) as session:
                     async with session.get(TEMPERATURE_HISTORY_URL) as resp:
                         data = await resp.json()
+                        self.server_connected = True
+                        self.sensor_connected = bool(data["sensor_connected"])
                         self.data.loc[:, "Temperature(F)"] = data["f"]
                         self.data.loc[:, "Temperature(C)"] = data["c"]
                         self.data.loc[:, "Time - Seconds"] = list(range(len(data["f"])-1, -1, -1))
                         self.data_update_event.set()
+                        self.request_fail_count = 0
             except:
-                print("unable to find server")
+                if (self.request_fail_count >= FAILURE_THRESHOLD):
+                    print("unable to find server")
+                    self.server_connected = False
+                    self.sensor_connected = False
+                    self.data_update_event.set()
+                else:
+                    self.request_fail_count += 1
 
             await asyncio.sleep(0.2)
