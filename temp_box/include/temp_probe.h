@@ -1,6 +1,7 @@
 #ifndef TEMP_HARDWARE
 #define TEMP_HARDWARE
 #include <Arduino.h>
+#include "oled.h"
 
 #define TEMP_BUFFER_SIZE 300
 
@@ -8,11 +9,11 @@ class TemperatureData {
     public:
         String get_history_string(char unit);
 
-        TemperatureData(bool is_prob_connected);
+        TemperatureData(OLEDManager* display, bool is_prob_connected);
         /**
          * Overload function with option to construct with starting temperatures.
          */
-        TemperatureData(bool is_prob_connected, float c, float f);
+        TemperatureData(OLEDManager* display, bool is_prob_connected, float c, float f);
         
         /**
          * Use to add a temperature reading to the log.
@@ -75,6 +76,7 @@ class TemperatureData {
         float current_f;
 
         String get_buffer_str(float* buffer);
+        OLEDManager* oled;
 };
 
 /**

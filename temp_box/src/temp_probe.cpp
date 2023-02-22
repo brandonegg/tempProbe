@@ -13,14 +13,16 @@ void collect_current_temp(TemperatureData* temp_data) {
 /**
  * Temperature probe class functionality. Mostly getters and setters.
  */
-TemperatureData::TemperatureData(bool is_probe_connected) {
+TemperatureData::TemperatureData(OLEDManager* display, bool is_probe_connected) {
+    oled = display;
     remote_display_on = false;
     probe_connected = is_probe_connected;
     current_c = 0.0f;
     current_f = 32.0f;
 }
 
-TemperatureData::TemperatureData(bool is_probe_connected, float c, float f) {
+TemperatureData::TemperatureData(OLEDManager* display, bool is_probe_connected, float c, float f) {
+    oled = display;
     remote_display_on = false;
     probe_connected = is_probe_connected;
     current_c = c;
@@ -30,6 +32,8 @@ TemperatureData::TemperatureData(bool is_probe_connected, float c, float f) {
 void TemperatureData::record_reading(float c, float f) {
     current_c = c;
     current_f = f;
+
+    oled->display_temperature(c, f);
 
     // Find new buffer location
     if (buff_pos >= TEMP_BUFFER_SIZE - 1) {
