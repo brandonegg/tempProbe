@@ -23,8 +23,8 @@ void timed_calls(void* arg) {
 void setup() {
   Serial.begin(115200);
   oled = new OLEDManager();
-  oled->render_text(0,30, "Connected to WiFi:");
-  oled->render_text(0,40, WIFI_SSID);
+  oled->render_text(0,28, "Connecting to WiFi:", u8g2_font_6x13O_tr);
+  oled->render_text(0,42, WIFI_SSID, u8g2_font_6x13B_tf);
   oled->send();
 
   connect_wifi();
@@ -53,16 +53,4 @@ void setup() {
 void loop() {
   temp_server->listen();
   text_manager->check_temp();
-}
-
-void VextON(void)
-{
-  pinMode(Vext,OUTPUT);
-  digitalWrite(Vext, LOW);
-}
-
-void VextOFF(void) //Vext default OFF
-{
-  pinMode(Vext,OUTPUT);
-  digitalWrite(Vext, HIGH);
 }

@@ -20,11 +20,12 @@ class OLEDManager {
          */
         void display_temperature(float c, float f);
         /**
-         * Render text to LCD
+         * Render text to LCD - Requires sent() command afterwards for string to
+         * display
          * @param int x x coordinate of text
          * @param int y y coordinate of text
          */
-        void render_text(int x, int y, String msg);
+        void render_text(int x, int y, String msg, const uint8_t* font);
         /**
          * Clears display.
          */

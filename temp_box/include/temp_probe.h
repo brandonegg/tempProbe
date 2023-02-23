@@ -2,8 +2,10 @@
 #define TEMP_HARDWARE
 #include <Arduino.h>
 #include "oled.h"
+#include <DallasTemperature.h>
 
 #define TEMP_BUFFER_SIZE 300
+#define ONE_WIRE_BUS 26
 
 class TemperatureData {
     public:
@@ -63,7 +65,6 @@ class TemperatureData {
          */
         void set_remote_display_enabled(bool val);
 
-
     private:
         float bufferC[TEMP_BUFFER_SIZE] = { 0.0f };
         float bufferF[TEMP_BUFFER_SIZE] = { 0.0f };
@@ -80,8 +81,17 @@ class TemperatureData {
 };
 
 /**
- * Interfaces with hardware to collect current temperature data.
+ * Interfaces with hardware to collect current temperature data. Will only record data
+ * if probe is connected. Returns true if successful (probe connected), false if not.
  */
-void collect_current_temp(TemperatureData* temp_data);
+bool collect_current_temp(TemperatureData* temp_data);
+
+/**
+ * Initialize the one-wire temperature probe libraries
+ */
+void init_temperature_probe();
+
+void vext_on();
+void vext_off();
 
 #endif

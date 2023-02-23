@@ -16,7 +16,8 @@ void OLEDManager::send() {
   u8g2->sendBuffer();
 }
 
-void OLEDManager::render_text(int x, int y, String msg, uint8_t font) {
+void OLEDManager::render_text(int x, int y, String msg, const uint8_t* font) {
+  u8g2->setFont(font);
   u8g2->drawStr(x, y, msg.c_str());	// write something to the internal memory
 }
 
@@ -29,8 +30,6 @@ void OLEDManager::display_temperature(float c, float f) {
   u8g2->print(row1.c_str());
   u8g2->setCursor(0, 50);
   u8g2->print(row2.c_str());
-  //u8g2->drawStr(0, 30, row1.c_str());
-  //u8g2->drawStr(0, 50, row2.c_str());
   send();
 }
 

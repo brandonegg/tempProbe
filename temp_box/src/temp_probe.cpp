@@ -1,13 +1,23 @@
 #include "temp_probe.h"
 
-float temp_f = 32;
-float temp_c = 0;
+OneWire* one_wire;
+DallasTemperature* temp_sensor;
 
-void collect_current_temp(TemperatureData* temp_data) {
-    // TODO: Orlando hardware controls goes here.
-    (*temp_data).record_reading(temp_c, temp_f);
-    temp_f++;
-    temp_c++;
+void init_temperature_probe() {
+    vext_on();
+    one_wire = new OneWire(ONE_WIRE_BUS);
+    temp_sensor = new DallasTemperature(one_wire);
+}
+
+bool collect_current_temp(TemperatureData* temp_data) {
+    float temp_c = temp_sensor->getTempCByIndex(0);
+    float temp_f = temp_sensor->getTempFByIndex(0);
+    if (temp_c != DEVICE_DISCONNECTED_C) {
+        (*temp_data).record_reading(temp_c, temp_f);
+        return true;
+    }
+
+    return false;
 }
 
 /**
@@ -115,4 +125,17 @@ String TemperatureData::get_buffer_str(float* buffer) {
 
     output += "]";
     return output;
+}
+
+// UTILITY:
+void vext_on(void)
+{
+  pinMode(Vext,OUTPUT);
+  digitalWrite(Vext, LOW);
+}
+
+void vext_off(void) //Vext default OFF
+{
+  pinMode(Vext,OUTPUT);
+  digitalWrite(Vext, HIGH);
 }
