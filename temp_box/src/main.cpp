@@ -47,6 +47,7 @@ void setup() {
   IPAddress ip = connect_wifi();
   oled->clear();
   oled->render_text(0,48, ip.toString(), u8g2_font_6x13B_tf);
+  oled->send();
 
   // Initialize objects
   temp_data = new TemperatureData(oled, true);
@@ -62,11 +63,13 @@ void setup() {
     .arg = NULL,
     .name = "temp readings"
   };
+  
+  delay(5000);
+  oled->set_display(false);
+
+  collect_current_temp(temp_data);
   esp_timer_create(&timer_args, &timer);
   esp_timer_start_periodic(timer, TEMPERATURE_POLL_FREQUENCY);
-  collect_current_temp(temp_data);
-  delay(3000);
-  oled->set_display(false);
 
   // Setup push button
   pinMode(DISPLAY_BUTTON_PIN, INPUT);

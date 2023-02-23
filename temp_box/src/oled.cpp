@@ -33,9 +33,10 @@ void OLEDManager::display_temperature(float c, float f) {
   String row1 = "C: " + String(c);
   String row2 = "F: " + String(f);
   u8g2->setFontMode(0); // Not transparent;
-  u8g2->setCursor(0, 30);
+  u8g2->setFont(u8g2_font_chargen_92_mf);
+  u8g2->setCursor(0, 29);
   u8g2->print(row1.c_str());
-  u8g2->setCursor(0, 50);
+  u8g2->setCursor(0, 51);
   u8g2->print(row2.c_str());
   send();
 }
