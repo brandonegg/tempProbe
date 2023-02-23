@@ -3,19 +3,23 @@
 OneWire* one_wire;
 DallasTemperature* temp_sensor;
 
-void init_temperature_probe() {
+void init_temperature_probe(TemperatureData* temp_data) {
     vext_on();
     one_wire = new OneWire(ONE_WIRE_BUS);
     temp_sensor = new DallasTemperature(one_wire);
-    temp_sensor->begin();
 }
 
 bool collect_current_temp(TemperatureData* temp_data) {
+    if (!temp_data->is_probe_initialized()) {
+        temp_sensor->begin();
+    }
+
     temp_sensor->requestTemperatures();
     float temp_c = temp_sensor->getTempCByIndex(0);
     float temp_f = temp_sensor->getTempFByIndex(0);
     if (temp_c != DEVICE_DISCONNECTED_C) {
-        (*temp_data).record_reading(temp_c, temp_f);
+        temp_data->record_reading(temp_c, temp_f);
+        temp_data->set_probe_initialized(true);
         return true;
     }
     return false;
@@ -38,6 +42,14 @@ TemperatureData::TemperatureData(OLEDManager* display, bool is_probe_connected, 
     probe_connected = is_probe_connected;
     current_c = c;
     current_f = f;
+}
+
+bool TemperatureData::is_probe_initialized() {
+    return probe_initialized;
+}
+
+void TemperatureData::set_probe_initialized(bool val) {
+    probe_initialized = val;
 }
 
 void TemperatureData::record_reading(float c, float f) {

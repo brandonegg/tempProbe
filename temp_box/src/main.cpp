@@ -55,7 +55,7 @@ void setup() {
   temp_server = new TemperatureServer(temp_data, text_manager);
 
   // Init hardware
-  init_temperature_probe();
+  init_temperature_probe(temp_data);
 
   // Timed function
   esp_timer_create_args_t timer_args = {

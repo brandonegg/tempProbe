@@ -64,6 +64,14 @@ class TemperatureData {
          * Sets remote_display_enabled variable.
          */
         void set_remote_display_enabled(bool val);
+        /**
+         * Set probe to initialized after running temp_sensor->begin()
+         */
+        void set_probe_initialized(bool val);
+        /**
+         * Return true if temp_sensor->being() has been run
+         */
+        bool is_probe_initialized();
 
     private:
         float bufferC[TEMP_BUFFER_SIZE] = { 0.0f };
@@ -71,6 +79,7 @@ class TemperatureData {
         int buff_pos = 0;
         int buff_start = 1;
         bool probe_connected;
+        bool probe_initialized = false;
         // Tells device that application is requesting display be on
         bool remote_display_on = false;
         float current_c;
@@ -89,7 +98,7 @@ bool collect_current_temp(TemperatureData* temp_data);
 /**
  * Initialize the one-wire temperature probe libraries
  */
-void init_temperature_probe();
+void init_temperature_probe(TemperatureData* temp_data);
 
 void vext_on();
 void vext_off();
