@@ -5,7 +5,7 @@ import aiohttp
 from temp_monitor.globals import BASE_URL
 
 TEMPERATURE_HISTORY_URL = f"{BASE_URL}/history"
-FAILURE_THRESHOLD = 4
+FAILURE_THRESHOLD = 5
 
 class TemperatureState:
     '''
@@ -28,7 +28,7 @@ class TemperatureState:
     async def _update_data(self):
         while True:
             try:
-                session_timeout = aiohttp.ClientTimeout(total=None,sock_connect=1,sock_read=2)
+                session_timeout = aiohttp.ClientTimeout(total=None,sock_connect=2,sock_read=2)
                 async with aiohttp.ClientSession(timeout=session_timeout) as session:
                     async with session.get(TEMPERATURE_HISTORY_URL) as resp:
                         data = await resp.json()
