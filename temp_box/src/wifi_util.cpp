@@ -1,6 +1,5 @@
 #include "wifi_util.h"
 #include "esp_wpa2.h" //wpa2 library for connections to Enterprise networks
-#include <WiFi.h> //Wifi library
 #include "secrets.h"
 
 byte mac[6];
@@ -14,7 +13,7 @@ void setup_other() {
   WiFi.begin(WIFI_SSID, EAP_PASSWORD);
 }
 
-void connect_wifi() {
+IPAddress connect_wifi() {
     WiFi.disconnect(true);  //disconnect from WiFi to set new WiFi connection
     WiFi.setHostname("Temperature Box");
     if (strcmp(WIFI_SSID, "eduroam") == 0) {
@@ -49,4 +48,6 @@ void connect_wifi() {
     Serial.print(mac[4], HEX);
     Serial.print(":");
     Serial.println(mac[5], HEX);
+
+    return WiFi.localIP();
 }

@@ -14,11 +14,20 @@ TemperatureData* temp_data;
 TextManager* text_manager;
 OLEDManager* oled;
 
+bool flag_disconnect_error = false;
+
 void timed_calls(void* arg) {
   bool result = collect_current_temp(temp_data);
+  Serial.println("Is probe connected? " + String(temp_data->is_probe_connected()));
   if (!result) {
+    bool was_probe_connected_before = temp_data->is_probe_connected();
     // Not connected
     temp_data->set_probe(false);
+
+    if (was_probe_connected_before) {
+      // If this is the first time seeing it is not connected, render the display.
+      flag_disconnect_error = true;
+    }
   } else {
     temp_data->set_probe(true);
   }
@@ -35,7 +44,8 @@ void setup() {
   oled->render_text(0,42, WIFI_SSID, u8g2_font_6x13B_tf);
   oled->send();
 
-  connect_wifi();
+  IPAddress ip = connect_wifi();
+  oled->render_text(0,60, ip.toString(), u8g2_font_6x13B_tf);
 
   // Initialize objects
   temp_data = new TemperatureData(oled, true);
@@ -54,6 +64,7 @@ void setup() {
   esp_timer_create(&timer_args, &timer);
   esp_timer_start_periodic(timer, TEMPERATURE_POLL_FREQUENCY);
   collect_current_temp(temp_data);
+  delay(1000);
   oled->set_display(false);
 
   // Setup push button
@@ -65,8 +76,17 @@ void setup() {
  */
 void loop() {
   int btn_state = digitalRead(DISPLAY_BUTTON_PIN);
-  if (btn_state == HIGH || temp_data->is_remote_display_enabled()) {
+  if (btn_state == HIGH || temp_data->is_remote_display_enabled() || !temp_data->is_probe_connected()) {
+    Serial.println("display on");
     oled->set_display(true);
+    if (flag_disconnect_error) {
+      oled->clear();
+      oled->render_text(0, 15, "Error: Could not read", u8g2_font_6x13B_tf);
+      oled->render_text(0, 30, "temperature data", u8g2_font_6x13B_tf);
+      oled->send();
+      Serial.println("Dispalying the text");
+      flag_disconnect_error = false;
+    }
   } else {
     oled->set_display(false);
   }

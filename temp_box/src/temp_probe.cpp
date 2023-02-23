@@ -18,7 +18,6 @@ bool collect_current_temp(TemperatureData* temp_data) {
         (*temp_data).record_reading(temp_c, temp_f);
         return true;
     }
-
     return false;
 }
 
