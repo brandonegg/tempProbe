@@ -6,8 +6,9 @@ import plotly.express as px
 from flet.plotly_chart import PlotlyChart
 import flet as ft
 from temp_monitor.data import TemperatureState
+from temp_monitor.globals import BASE_URL
 
-TEMPERATURE_HISTORY_URL = "http://tempbox.local/history"
+TEMPERATURE_HISTORY_URL = f"{BASE_URL}/history"
 
 class MonitorContainer(ft.Container):
     '''
@@ -63,12 +64,15 @@ class MonitorContainer(ft.Container):
             if self.graph is None or self.graph_gesture_wrapper is None or self.graph_container is None:
                 self.graph = TemperatureGraph(self.state, expand=True)
 
-                self.graph_gesture_wrapper = ft.GestureDetector(
-                    mouse_cursor=ft.MouseCursor.GRAB,
-                    on_pan_update=self._pan_update,
-                    on_scroll=self._scroll_update,
-                    drag_interval=25,
-                    content=self.graph,
+                self.graph_gesture_wrapper = ft.Container(
+                        ft.GestureDetector(
+                        mouse_cursor=ft.MouseCursor.GRAB,
+                        on_pan_update=self._pan_update,
+                        on_scroll=self._scroll_update,
+                        drag_interval=25,
+                        content=self.graph,
+                    ),
+                    alignment=ft.alignment.center
                 )
 
                 self.graph_container = ft.Container(
@@ -76,7 +80,8 @@ class MonitorContainer(ft.Container):
                         ft.Switch(label="Enable Display", value=False, on_change=self._enable_display_changed),
                         self.graph_gesture_wrapper
                     ]),
-                    alignment=ft.alignment.center
+                    alignment=ft.alignment.center,
+                    padding=20
                 )
 
             self.current_view = "graph"
@@ -132,6 +137,7 @@ class TemperatureGraph(PlotlyChart):
         self.data_needs_update = True
 
         self.state = state
+        self.height = 600
 
         self.figure = px.line(self.state.data, x="Time - Seconds", y=f"Temperature({self.state.data_unit.upper()})")
         self.figure['layout']['xaxis']['autorange'] = "reversed"

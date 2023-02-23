@@ -6,8 +6,9 @@ import requests
 import asyncio
 import aiohttp
 from temp_monitor.data import TemperatureState
+from temp_monitor.globals import BASE_URL
 
-ALERT_SETTINGS_URL = "http://tempbox.local/alert"
+ALERT_SETTINGS_URL = f"{BASE_URL}/alert"
 
 class SettingsContainer(ft.Container):
     '''

@@ -15,7 +15,13 @@ TextManager* text_manager;
 OLEDManager* oled;
 
 void timed_calls(void* arg) {
-  collect_current_temp(temp_data);
+  bool result = collect_current_temp(temp_data);
+  if (!result) {
+    // Not connected
+    temp_data->set_probe(false);
+  } else {
+    temp_data->set_probe(true);
+  }
 }
 
 /**

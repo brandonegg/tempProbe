@@ -2,8 +2,9 @@ import asyncio
 import flet as ft
 import pandas as pd
 import aiohttp
+from temp_monitor.globals import BASE_URL
 
-TEMPERATURE_HISTORY_URL = "http://tempbox.local/history"
+TEMPERATURE_HISTORY_URL = f"{BASE_URL}/history"
 FAILURE_THRESHOLD = 4
 
 class TemperatureState:
