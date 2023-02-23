@@ -161,6 +161,7 @@ class TemperatureGraph(PlotlyChart):
         self.x_range = None
         self.max_x_range = [300, 0]
         self.y_range = None
+        self.axis_ratio = 0.25 # (y_axis max-min) / (x_axis max - min) ex: 0.5 means y_axis spans half the # of degrees and x_axis time units.
         self.data_needs_update = True
 
         self.state = state
@@ -191,18 +192,14 @@ class TemperatureGraph(PlotlyChart):
         '''
         self.x_range = [len(self.state.data.index), 0]
         data_col = f"Temperature({self.state.data_unit.upper()})"
-        self.y_range = [self.state.data[data_col].min(), self.state.data[data_col].max()]
+        #self.y_range = [self.state.data[data_col].min(), self.state.data[data_col].max()]
+        self.y_range = [0, int(abs(self.x_range[0]-self.x_range[1])*self.axis_ratio)]
         self._update_axis()
 
     def _update_axis(self):
         '''
         Sync x and y-axis values to figure.
         '''
-        if self.x_range[0] > self.max_x_range[0]:
-            self.x_range[0] = self.max_x_range[0]
-        if self.x_range[1] < self.max_x_range[1]:
-            self.x_range[1] = self.max_x_range[1]
-
         self.figure.update_xaxes(autorange=False, range=self.x_range)
         self.figure.update_yaxes(autorange=False, range=self.y_range)
 
@@ -232,9 +229,28 @@ class TemperatureGraph(PlotlyChart):
         '''
         Zoom x-axis
         '''
-        x_adjustment = abs(self.x_range[0] - self.x_range[1]) * (1-factor)
-        y_adjustment = abs(self.y_range[0] - self.y_range[1]) * (1-factor)
+        x_range = abs(self.x_range[0] - self.x_range[1])
+        scaled_x_range = x_range * factor
+        x_adjustment = (scaled_x_range - x_range) / 2
 
-        self.x_range = [self.x_range[0] - x_adjustment, self.x_range[1] + x_adjustment]
-        self.y_range = [self.y_range[0] + y_adjustment, self.y_range[1] - y_adjustment]
+
+        new_x_0 = self.x_range[0] - x_adjustment
+        new_x_1 = self.x_range[1] + x_adjustment
+
+        if (new_x_0 >= self.max_x_range[0]):
+            new_x_1 = new_x_1 - (new_x_0 - self.x_range[0])
+            new_x_0 = self.max_x_range[0]
+
+        if (new_x_1 <= self.max_x_range[1]):
+            new_x_1 = self.max_x_range[1]
+
+        actual_scaled_x_range = abs(new_x_0 - new_x_1)
+
+        y_range = abs(self.y_range[1] - self.y_range[0])
+        scaled_y_range = actual_scaled_x_range*self.axis_ratio
+        y_adjustment = ((scaled_y_range - y_range) * self.axis_ratio) / 2
+
+        self.x_range = [new_x_0, new_x_1]
+        self.y_range = [self.y_range[0] - y_adjustment, self.y_range[1] + y_adjustment]
+
         self._update_axis()
