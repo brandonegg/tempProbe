@@ -213,6 +213,11 @@ class TemperatureGraph(PlotlyChart):
         x_adjustment = abs(self.x_range[0] - self.x_range[1])*(amount_x/2)
         y_adjustment = abs(self.y_range[0] - self.y_range[1])*(amount_y/2)
 
+        if self.x_range[0] + x_adjustment >= self.max_x_range[0]:
+            x_adjustment = self.max_x_range[0] - self.x_range[0]
+        if self.x_range[1] + x_adjustment <= self.max_x_range[1]:
+            x_adjustment = self.max_x_range[1] - self.x_range[1]
+
         self.x_range = [self.x_range[0] + x_adjustment, self.x_range[1] + x_adjustment]
         self.y_range = [self.y_range[0] + y_adjustment, self.y_range[1] + y_adjustment]
         self._update_axis()
