@@ -65,7 +65,7 @@ void setup() {
  */
 void loop() {
   int btn_state = digitalRead(DISPLAY_BUTTON_PIN);
-  if (btn_state == HIGH) {
+  if (btn_state == HIGH || temp_data->is_remote_display_enabled()) {
     oled->set_display(true);
   } else {
     oled->set_display(false);

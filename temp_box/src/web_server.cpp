@@ -10,6 +10,7 @@ WebServer* TemperatureServer::server;
 PhoneAlertData* TemperatureServer::phone_alert;
 TemperatureData* TemperatureServer::temp_data;
 TextManager* TemperatureServer::text_manager;
+OLEDManager* TemperatureServer::oled;
 
 /**
  * TemperatureServer class initializes webserver on port 80 (with mdns tempbox.local). Adds
@@ -21,6 +22,7 @@ TemperatureServer::TemperatureServer(TemperatureData* temp_data, TextManager* te
     TemperatureServer::temp_data = temp_data;
     TemperatureServer::phone_alert = new PhoneAlertData();
     TemperatureServer::text_manager = text_manager;
+    TemperatureServer::oled = oled;
 
     MDNS.begin("tempbox");
     TemperatureServer::server = new WebServer(80);
@@ -64,11 +66,15 @@ void TemperatureServer::handle_get_alert() {
 }
 
 void TemperatureServer::handle_post_display() {
-    DynamicJsonDocument doc(512);
+    DynamicJsonDocument doc(128);
     deserializeJson(doc, TemperatureServer::server->arg("plain"));
 
     bool val = doc["set_display"].as<bool>();
-    TemperatureServer::temp_data->set_remote_display_enabled(val);
+    temp_data->set_remote_display_enabled(val);
+
+    Serial.println("Set oled to " + String(val));
+    String res = "{\"success\": 1}";
+    TemperatureServer::server->send(200, "application/json", res);
 }
 
 void TemperatureServer::handle_get_history() {

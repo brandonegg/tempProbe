@@ -22,6 +22,7 @@ class TemperatureServer {
         static PhoneAlertData* phone_alert;
         static TemperatureData* temp_data;
         static TextManager* text_manager;
+        static OLEDManager* oled;
         char reference = 'c'; // c or f - use LOWER case.
         
         // Route handlers - format = handle_{method}_{endpoint}

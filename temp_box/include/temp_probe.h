@@ -72,7 +72,7 @@ class TemperatureData {
         int buff_start = 1;
         bool probe_connected;
         // Tells device that application is requesting display be on
-        bool remote_display_on;
+        bool remote_display_on = false;
         float current_c;
         float current_f;
 

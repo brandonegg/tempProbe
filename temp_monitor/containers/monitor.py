@@ -7,8 +7,10 @@ from flet.plotly_chart import PlotlyChart
 import flet as ft
 from temp_monitor.data import TemperatureState
 from temp_monitor.globals import BASE_URL
+import aiohttp
 
 TEMPERATURE_HISTORY_URL = f"{BASE_URL}/history"
+DISPLAY_URL = f"{BASE_URL}/display"
 
 class MonitorContainer(ft.Container):
     '''
@@ -75,9 +77,11 @@ class MonitorContainer(ft.Container):
                     alignment=ft.alignment.center
                 )
 
+                self.enable_display_alert_message = ft.Text("", color="")
+                self.enable_display_toggle = ft.Switch(label="Enable Display", value=False, on_change=self._enable_display_changed)
                 self.graph_container = ft.Container(
                     ft.Column([
-                        ft.Switch(label="Enable Display", value=False, on_change=self._enable_display_changed),
+                        ft.Row([self.enable_display_toggle, self.enable_display_alert_message]),
                         self.graph_gesture_wrapper
                     ]),
                     alignment=ft.alignment.center,
@@ -89,9 +93,31 @@ class MonitorContainer(ft.Container):
 
         await self.update_async()
 
-    async def _enable_display_changed(self):
-        # TODO: Make request to route to update display to on
-        pass
+    async def _enable_display_changed(self, event):
+        val = event.data
+        request = {
+            "set_display": val == "true"
+        }
+
+        self.enable_display_toggle.disabled = True
+        await self.enable_display_alert_message.update_async()
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(DISPLAY_URL, json=request) as resp:
+                    data = await resp.json()
+                    if not 'success' in data:
+                        raise Exception("request unsuccessful")
+                    
+                    self.enable_display_alert_message.value = ""
+        except:
+            self.enable_display_alert_message.color = "red"
+            self.enable_display_alert_message.value = "Server unreachable. Try again"
+            self.enable_display_toggle.value = not val
+
+        self.enable_display_toggle.disabled = False
+        await self.enable_display_toggle.update_async()
+        await self.enable_display_alert_message.update_async()
 
     async def _data_update_listener(self):
         await self.render_views()
@@ -133,6 +159,7 @@ class TemperatureGraph(PlotlyChart):
     ):
         super().__init__(*args, **kwargs)
         self.x_range = None
+        self.max_x_range = [300, 0]
         self.y_range = None
         self.data_needs_update = True
 
@@ -171,6 +198,11 @@ class TemperatureGraph(PlotlyChart):
         '''
         Sync x and y-axis values to figure.
         '''
+        if self.x_range[0] > self.max_x_range[0]:
+            self.x_range[0] = self.max_x_range[0]
+        if self.x_range[1] < self.max_x_range[1]:
+            self.x_range[1] = self.max_x_range[1]
+
         self.figure.update_xaxes(autorange=False, range=self.x_range)
         self.figure.update_yaxes(autorange=False, range=self.y_range)
 
