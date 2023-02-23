@@ -7,9 +7,11 @@ void init_temperature_probe() {
     vext_on();
     one_wire = new OneWire(ONE_WIRE_BUS);
     temp_sensor = new DallasTemperature(one_wire);
+    temp_sensor->begin();
 }
 
 bool collect_current_temp(TemperatureData* temp_data) {
+    temp_sensor->requestTemperatures();
     float temp_c = temp_sensor->getTempCByIndex(0);
     float temp_f = temp_sensor->getTempFByIndex(0);
     if (temp_c != DEVICE_DISCONNECTED_C) {

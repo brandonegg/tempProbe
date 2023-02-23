@@ -34,6 +34,17 @@ class OLEDManager {
          * Sends buffer to display
          */
         void send();
+        /**
+         * Sets the display to on (if true) or off.
+         */
+        void set_display(bool on);
+        /**
+         * Returns true is display is on
+         */
+        bool is_display_on();
+
+    private:
+        bool display_on = false;
 
     private:
         U8G2_SSD1306_128X64_NONAME_F_SW_I2C* u8g2;

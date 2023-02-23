@@ -5,6 +5,7 @@
 #include "temp_probe.h"
 #include "oled.h"
 
+#define DISPLAY_BUTTON_PIN 48
 #define TEMPERATURE_POLL_FREQUENCY 1000000 // Once every 1 seconds (time in uS).
 esp_timer_handle_t timer;
 
@@ -23,6 +24,7 @@ void timed_calls(void* arg) {
 void setup() {
   Serial.begin(115200);
   oled = new OLEDManager();
+  oled->set_display(true);
   oled->render_text(0,28, "Connecting to WiFi:", u8g2_font_6x13O_tr);
   oled->render_text(0,42, WIFI_SSID, u8g2_font_6x13B_tf);
   oled->send();
@@ -34,6 +36,9 @@ void setup() {
   text_manager = new TextManager(temp_data);
   temp_server = new TemperatureServer(temp_data, text_manager);
 
+  // Init hardware
+  init_temperature_probe();
+
   // Timed function
   esp_timer_create_args_t timer_args = {
     .callback = &timed_calls,
@@ -43,14 +48,23 @@ void setup() {
   esp_timer_create(&timer_args, &timer);
   esp_timer_start_periodic(timer, TEMPERATURE_POLL_FREQUENCY);
   collect_current_temp(temp_data);
-  collect_current_temp(temp_data);
-  oled->clear();
+  oled->set_display(false);
+
+  // Setup push button
+  pinMode(DISPLAY_BUTTON_PIN, INPUT);
 }
 
 /**
  * Listen for web server events and poll hardware
  */
 void loop() {
+  int btn_state = digitalRead(DISPLAY_BUTTON_PIN);
+  if (btn_state == HIGH) {
+    oled->set_display(true);
+  } else {
+    oled->set_display(false);
+  }
+
   temp_server->listen();
   text_manager->check_temp();
 }
