@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/overview_collage.png" width="800" />
+  <img src="docs/overview_collage.png" width="500" />
 </p>
 
 # TempBox
